@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "957507888133",
+    "project_id": "shoppingadmin-457c7",
+    "storage_bucket": "shoppingadmin-457c7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:957507888133:android:98cd60529012986c74a86c",
+        "android_client_info": {
+          "package_name": "com.example.eshopping"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKnHBFTPxUp_ngFeUflwg_ieQD-YtU5fA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:957507888133:android:5dfa9c8ebd0ac34e74a86c",
+        "android_client_info": {
+          "package_name": "com.example.shoppingadmin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKnHBFTPxUp_ngFeUflwg_ieQD-YtU5fA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:957507888133:android:b8c4b795fad21e7374a86c",
+        "android_client_info": {
+          "package_name": "com.example.shoppingapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKnHBFTPxUp_ngFeUflwg_ieQD-YtU5fA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
