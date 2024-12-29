@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.eshopping.R
@@ -37,6 +38,7 @@ import com.example.eshopping.data.model.Category
 import com.example.eshopping.presentation.viewmodel.GetProductCategoryState
 import com.example.eshopping.ui.theme.Montserrat
 import com.example.eshopping.ui.theme.MontserratMedium
+import com.example.eshopping.ui.theme.MontserratRegular
 
 
 @Composable
@@ -61,7 +63,8 @@ fun SearchBar() {
             .fillMaxWidth()
             .height(50.dp)
             .padding(horizontal = 8.dp)
-            .background(Color(0xFFEDEDED), shape = RoundedCornerShape(12.dp)),
+            .border(width = 1.dp, color = Color(232,144,142), shape = RoundedCornerShape(15.dp))
+            .background(Color(250,249,253), shape = RoundedCornerShape(15.dp)),
         decorationBox = { innerTextField ->
             Row(
                 modifier = Modifier.fillMaxSize(),
@@ -113,8 +116,8 @@ fun CategorySection(categoryProductState: GetProductCategoryState) {
 fun CategoryChip(category: Category) {
     Button(
         onClick = {},
-        shape = RoundedCornerShape(50),
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF8BBD0))
+        shape = RoundedCornerShape(30),
+        colors = ButtonDefaults.buttonColors(containerColor = Color(232,144,142))
     ) {
         Text(text = category.name, color = Color.White)
     }
@@ -130,9 +133,9 @@ fun ProductGrid(categoryProductState: GetProductCategoryState) {
         ))
         Text("See more", style = TextStyle(
             fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            fontFamily = Montserrat,
-            color = Color.Red
+            fontWeight = FontWeight.Normal,
+            fontFamily = MontserratMedium,
+            color = Color(232,144,142)
         ))
     }
     LazyRow {
@@ -149,20 +152,30 @@ fun ProductItem(name:String,price:String,finalPrice:String) {
         Image(
             painter = painterResource(R.drawable.frock),
             contentDescription = null,
-            modifier = Modifier.width (150.dp).height(200.dp).padding(end = 8.dp)
+            modifier = Modifier.width (145.dp).height(190.dp).padding(end = 8.dp)
         )
         Card(
             modifier = Modifier
-                .size(width = 150.dp, height = 160.dp)
+                .size(width = 143.dp, height = 160.dp)
                 .padding(end = 8.dp, top = 8.dp)
-                .border(1.dp, Color.Black, RoundedCornerShape(15.dp)),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+                .border(1.dp, Color.Gray, RoundedCornerShape(15.dp)),
+            colors = CardDefaults.cardColors(containerColor = Color(250,249,253))
         ) {
             Column(modifier = Modifier.padding(8.dp)) {
                 Text(name, style = TextStyle(fontFamily = Montserrat), fontWeight = FontWeight.Bold)
-                Text(price)
-                Text(finalPrice)
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(modifier = Modifier.padding(vertical = 8.dp), verticalAlignment = Alignment.Bottom) {
+                    Text("Rs: ", fontSize = 15.sp, color = Color(232,144,142))
+                    Text(finalPrice, style = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 21.sp, fontFamily = MontserratMedium, color = Color(232,144,142)))
+                }
+                Row(modifier = Modifier, horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Rs: ", fontSize = 15.sp, color = Color.DarkGray)
+                    Text(price, style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 17.sp, fontFamily = MontserratMedium, color = Color.DarkGray), textDecoration = TextDecoration.LineThrough)
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("20% off",style = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 11.sp, fontFamily = MontserratRegular, color = Color(232,144,142)))
+                }
             }
         }
     }
 }
+
