@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
@@ -26,13 +28,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.eshopping.R
 import com.example.eshopping.data.model.Category
 import com.example.eshopping.presentation.viewmodel.GetProductCategoryState
@@ -114,12 +119,18 @@ fun CategorySection(categoryProductState: GetProductCategoryState) {
 
 @Composable
 fun CategoryChip(category: Category) {
-    Button(
-        onClick = {},
-        shape = RoundedCornerShape(30),
-        colors = ButtonDefaults.buttonColors(containerColor = Color(232,144,142))
-    ) {
-        Text(text = category.name, color = Color.White)
+//    Button(
+//        onClick = {},
+//        shape = RoundedCornerShape(30),
+//        colors = ButtonDefaults.buttonColors(containerColor = Color(232,144,142))
+//    ) {
+//        Text(text = category.name, color = Color.White)
+//    }
+    Column(modifier = Modifier.padding(horizontal =12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(modifier = Modifier.size(70.dp).border(width = 1.dp, color = Color.Black, shape = CircleShape).background(Color.White), contentAlignment = Alignment.Center) {
+            AsyncImage(model = category.imageUrl, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(45.dp))
+        }
+        Text(category.name, style = TextStyle(fontFamily = Montserrat, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp))
     }
 }
 
@@ -140,18 +151,19 @@ fun ProductGrid(categoryProductState: GetProductCategoryState) {
     }
     LazyRow {
         items(categoryProductState.productData ?: emptyList()){
-            ProductItem(name = it.name, price = it.price, finalPrice = it.finalPrice)
+            ProductItem(name = it.name, price = it.price, finalPrice = it.finalPrice, imageUrl = it.image)
         }
     }
 
 }
 
 @Composable
-fun ProductItem(name:String,price:String,finalPrice:String) {
+fun ProductItem(imageUrl:String,name:String,price:String,finalPrice:String) {
     Column {
-        Image(
-            painter = painterResource(R.drawable.frock),
+        AsyncImage(
+            model = imageUrl,
             contentDescription = null,
+            contentScale = ContentScale.Crop,
             modifier = Modifier.width (145.dp).height(190.dp).padding(end = 8.dp)
         )
         Card(
