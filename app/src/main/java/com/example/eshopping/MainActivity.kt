@@ -11,19 +11,26 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.eshopping.presentation.navigation.NavApp
 import com.example.eshopping.presentation.screen.HomeScreenUI
+import com.example.eshopping.presentation.screen.SignInScreenUI
+import com.example.eshopping.presentation.screen.SignUpScreenUI
 import com.example.eshopping.ui.theme.EShoppingTheme
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             EShoppingTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    HomeScreenUI(modifier = Modifier.padding(innerPadding))
+                    NavApp(modifier = Modifier.padding(innerPadding), auth = auth)
                 }
             }
         }
