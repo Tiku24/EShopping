@@ -37,12 +37,14 @@ class RepoImpl @Inject constructor(private val firestore: FirebaseFirestore,priv
         trySend(ResultState.Loading)
         firestore.collection(PRODUCT).get().addOnSuccessListener {
             val product = it.documents.mapNotNull {
-                it.toObject(Product::class.java)
+                it.toObject(Product::class.java)?.apply {
+                    pId = it.id
+                }
             }
-            product.forEachIndexed { index, product ->
-                product.pId = it.documents[index].id
-                product
-            }
+//            product.forEachIndexed { index, product ->
+//                product.pId = it.documents[index].id
+//                product
+//            }
 
             trySend(ResultState.Success(product))
             Log.d("TAGCategoryProduct", product.toString())
@@ -80,6 +82,49 @@ class RepoImpl @Inject constructor(private val firestore: FirebaseFirestore,priv
         }.addOnFailureListener {
             trySend(ResultState.Error(it.message.toString()))
         }
+        awaitClose {
+            close()
+        }
+    }
+
+    override suspend fun getSpecificProduct(id: String): Flow<ResultState<Product>> = callbackFlow{
+        trySend(ResultState.Loading)
+        firestore.collection(PRODUCT).document(id).get().addOnSuccessListener {
+            val product = it.toObject(Product::class.java)
+            trySend(ResultState.Success(product!!))
+            Log.d("TAGRepo", "getSpecificProduct: $product")
+        }.addOnFailureListener {
+            trySend(ResultState.Error(message = it.message.toString()))
+        }
+        awaitClose {
+            close()
+        }
+    }
+
+    override suspend fun getUserById(uid: String): Flow<ResultState<UserData>> = callbackFlow{
+        trySend(ResultState.Loading)
+        firestore.collection(USER).document(uid).get().addOnSuccessListener {
+            val user = it.toObject(UserData::class.java)!!.apply {
+                this.uid = it.id
+            }
+            trySend(ResultState.Success(user))
+
+        }.addOnFailureListener {
+            trySend(ResultState.Error(message = it.message.toString()))
+        }
+        awaitClose {
+            close()
+        }
+    }
+
+    override suspend fun updateUserData(updatedFields: Map<String, Any?>): Flow<ResultState<String>> = callbackFlow{
+        trySend(ResultState.Loading)
+        firestore.collection(USER).document(auth.currentUser?.uid.toString())
+            .update(updatedFields).addOnSuccessListener {
+                trySend(ResultState.Success("User updated successfully"))
+            }.addOnFailureListener {
+                trySend(ResultState.Error(message = it.message.toString()))
+            }
         awaitClose {
             close()
         }

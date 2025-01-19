@@ -22,4 +22,13 @@ sealed class Routes {
 
     @Serializable
     object ProfileScreen
+
+    @Serializable
+    object CartScreen
+
+    @Serializable
+    object WishListScreen
+
+    @Serializable
+    data class ProductDetailScreen(val pId:String)
 }

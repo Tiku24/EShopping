@@ -11,4 +11,7 @@ interface Repo {
     suspend fun getAllProduct(): Flow<ResultState<List<Product>>>
     suspend fun registerUserWithEmailPass(userData: UserData): Flow<ResultState<String>>
     suspend fun signInUserWithEmailPass(email: String, password: String): Flow<ResultState<String>>
+    suspend fun getSpecificProduct(id:String): Flow<ResultState<Product>>
+    suspend fun getUserById(uid: String): Flow<ResultState<UserData>>
+    suspend fun updateUserData(updatedFields: Map<String, Any?>): Flow<ResultState<String>>
 }

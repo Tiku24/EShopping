@@ -1,5 +1,8 @@
 package com.example.eshopping.data.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Product(
     var pId : String = "",
     val name :String="",

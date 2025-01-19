@@ -31,13 +31,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import com.example.eshopping.R
 import com.example.eshopping.presentation.viewmodel.GetProductCategoryState
 import com.example.eshopping.presentation.viewmodel.MainViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun HomeScreenUI(modifier: Modifier = Modifier,vm: MainViewModel= hiltViewModel()) {
+fun HomeScreenUI(modifier: Modifier = Modifier,vm: MainViewModel= hiltViewModel(),navController: NavController) {
     val categoryProductState by vm.getProductCategoryState.collectAsState()
     Log.d("Debug", categoryProductState.categoryData.toString())
 
@@ -59,7 +60,7 @@ fun HomeScreenUI(modifier: Modifier = Modifier,vm: MainViewModel= hiltViewModel(
         else -> {
             Log.d("Debug", "Data loaded: ${categoryProductState.categoryData}")
             Scaffold {
-                ShoppingAppHomeScreen(modifier,categoryProductState)
+                ShoppingAppHomeScreen(modifier,categoryProductState, navController = navController)
             }
         }
     }
@@ -67,7 +68,6 @@ fun HomeScreenUI(modifier: Modifier = Modifier,vm: MainViewModel= hiltViewModel(
 
 @Composable
 fun CategoriesSection(modifier: Modifier,vm: MainViewModel= hiltViewModel(),categoryProductState: GetProductCategoryState) {
-
 
     Column {
         Row(

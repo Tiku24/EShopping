@@ -1,6 +1,6 @@
 package com.example.eshopping.presentation.screen
 
-import androidx.compose.foundation.Image
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -19,8 +19,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -31,31 +29,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.eshopping.R
 import com.example.eshopping.data.model.Category
+import com.example.eshopping.presentation.navigation.Routes
 import com.example.eshopping.presentation.viewmodel.GetProductCategoryState
+import com.example.eshopping.presentation.viewmodel.MainViewModel
 import com.example.eshopping.ui.theme.Montserrat
 import com.example.eshopping.ui.theme.MontserratMedium
 import com.example.eshopping.ui.theme.MontserratRegular
 
 
 @Composable
-fun ShoppingAppHomeScreen(modifier: Modifier, categoryProductState: GetProductCategoryState) {
+fun ShoppingAppHomeScreen(modifier: Modifier, categoryProductState: GetProductCategoryState,navController: NavController) {
     Column(
         modifier
             .fillMaxSize()
-            .padding(5.dp)
+            .padding(horizontal = 5.dp)
     ) {
         SearchBar()
         CategorySection(categoryProductState)
-        ProductGrid(categoryProductState)
+        ProductGrid(categoryProductState,navController)
     }
 }
 
@@ -68,8 +70,8 @@ fun SearchBar() {
             .fillMaxWidth()
             .height(50.dp)
             .padding(horizontal = 8.dp)
-            .border(width = 1.dp, color = Color(232,144,142), shape = RoundedCornerShape(15.dp))
-            .background(Color(250,249,253), shape = RoundedCornerShape(15.dp)),
+            .border(width = 1.dp, color = Color(232, 144, 142), shape = RoundedCornerShape(15.dp))
+            .background(Color(250, 249, 253), shape = RoundedCornerShape(15.dp)),
         decorationBox = { innerTextField ->
             Row(
                 modifier = Modifier.fillMaxSize(),
@@ -107,7 +109,9 @@ fun CategorySection(categoryProductState: GetProductCategoryState) {
             )
         )
         LazyRow (
-            modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(categoryProductState.categoryData ?: emptyList()){
@@ -127,16 +131,24 @@ fun CategoryChip(category: Category) {
 //        Text(text = category.name, color = Color.White)
 //    }
     Column(modifier = Modifier.padding(horizontal =12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(modifier = Modifier.size(70.dp).border(width = 1.dp, color = Color.Black, shape = CircleShape).background(Color.White), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier
+            .size(70.dp)
+            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+            .background(Color.White), contentAlignment = Alignment.Center) {
             AsyncImage(model = category.imageUrl, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(45.dp))
         }
+        Spacer(Modifier.height(5.dp))
         Text(category.name, style = TextStyle(fontFamily = Montserrat, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp))
     }
 }
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun ProductGrid(categoryProductState: GetProductCategoryState) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+fun ProductGrid(categoryProductState: GetProductCategoryState,navController: NavController,vm:MainViewModel= hiltViewModel()) {
+    val context = LocalContext.current
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .padding(vertical = 20.dp), horizontalArrangement = Arrangement.SpaceBetween) {
         Text("Flash Sale", style = TextStyle(
             fontSize = 18.sp,
             fontWeight = FontWeight.ExtraBold,
@@ -151,22 +163,32 @@ fun ProductGrid(categoryProductState: GetProductCategoryState) {
     }
     LazyRow {
         items(categoryProductState.productData ?: emptyList()){
-            ProductItem(name = it.name, price = it.price, finalPrice = it.finalPrice, imageUrl = it.image)
+            ProductItem(vm = vm, name = it.name, price = it.price, finalPrice = it.finalPrice, imageUrl = it.image, onClick = {
+            navController.navigate(Routes.ProductDetailScreen(it.pId))
+                })
         }
     }
-
 }
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun ProductItem(imageUrl:String,name:String,price:String,finalPrice:String) {
+fun ProductItem(imageUrl:String,name:String,price:String,finalPrice:String,onClick:()->Unit,vm: MainViewModel) {
+    var isBottomBarVisible  = vm.isBottomBarVisible.value
     Column {
         AsyncImage(
             model = imageUrl,
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.width (145.dp).height(190.dp).padding(end = 8.dp)
+            modifier = Modifier
+                .width(145.dp)
+                .height(190.dp)
+                .padding(end = 8.dp)
+                .clip(RoundedCornerShape(15.dp))
+
         )
         Card(
+            onClick = {
+                onClick.invoke()},
             modifier = Modifier
                 .size(width = 143.dp, height = 160.dp)
                 .padding(end = 8.dp, top = 8.dp)

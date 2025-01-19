@@ -9,8 +9,11 @@ import com.example.eshopping.data.model.Product
 import com.example.eshopping.data.model.UserData
 import com.example.eshopping.domain.usecase.GetCategoryUseCase
 import com.example.eshopping.domain.usecase.GetProductUseCase
+import com.example.eshopping.domain.usecase.GetSpecificProductUseCase
+import com.example.eshopping.domain.usecase.GetUserByIdUseCase
 import com.example.eshopping.domain.usecase.RegisterUserWithEmailPassUseCase
 import com.example.eshopping.domain.usecase.SignInUserWithEmailPassUseCase
+import com.example.eshopping.domain.usecase.UpdateUserDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +29,10 @@ class MainViewModel @Inject constructor(
     private val getCategoryUseCase: GetCategoryUseCase,
     private val getProductUseCase: GetProductUseCase,
     private val registerUserWithEmailPassUseCase: RegisterUserWithEmailPassUseCase,
-    private val signInUserWithEmailPassUseCase: SignInUserWithEmailPassUseCase
+    private val signInUserWithEmailPassUseCase: SignInUserWithEmailPassUseCase,
+    private val getSpecificProductUseCase: GetSpecificProductUseCase,
+    private val getUserByIdUseCase: GetUserByIdUseCase,
+    private val updateUserDataUseCase: UpdateUserDataUseCase
 ) :ViewModel() {
     private val _getProductCategoryState = MutableStateFlow(GetProductCategoryState())
     val getProductCategoryState = _getProductCategoryState.asStateFlow()
@@ -36,6 +42,75 @@ class MainViewModel @Inject constructor(
 
     private val _signInUserWithEmailPassState = MutableStateFlow(SignInUserWithEmailPassState())
     val signInUserWithEmailPassState = _signInUserWithEmailPassState.asStateFlow()
+
+    private val _getSpecificProductState = MutableStateFlow(GetSpecificProductState())
+    val getSpecificProductState = _getSpecificProductState.asStateFlow()
+
+    private val _isBottomBarVisible = MutableStateFlow(true)
+    val isBottomBarVisible = _isBottomBarVisible.asStateFlow()
+
+    private val _getUserByIdState = MutableStateFlow(GetUserByIdState())
+    val getUserByIdState = _getUserByIdState.asStateFlow()
+
+    private val _updateUserDataState = MutableStateFlow(UpdateUserDataState())
+    val updateUserDataState = _updateUserDataState.asStateFlow()
+
+
+    fun updateUser(updatedFields: Map<String, Any?>){
+        viewModelScope.launch {
+            updateUserDataUseCase.updateUserDataUseCase(updatedFields).collectLatest {
+                when(it){
+                    is ResultState.Loading -> {
+                        _updateUserDataState.value = UpdateUserDataState(isLoading = true)
+                    }
+                    is ResultState.Success -> {
+                        _updateUserDataState.value = UpdateUserDataState(success = it.data)
+                    }
+                    is ResultState.Error -> {
+                        _updateUserDataState.value = UpdateUserDataState(error = it.message)
+                    }
+                }
+            }
+        }
+    }
+
+
+    fun getUserById(uid: String){
+        viewModelScope.launch(Dispatchers.IO) {
+            getUserByIdUseCase.getUserByIdUseCase(uid).collectLatest {
+                when(it){
+                    is ResultState.Loading -> {
+                        _getUserByIdState.value = GetUserByIdState(isLoading = true)
+                    }
+                    is ResultState.Success -> {
+                        _getUserByIdState.value = GetUserByIdState(success = it.data)
+                    }
+                    is ResultState.Error -> {
+                        _getUserByIdState.value = GetUserByIdState(error = it.message)
+                    }
+                }
+            }
+        }
+    }
+
+    fun getSpecificProduct(id:String){
+        viewModelScope.launch {
+            getSpecificProductUseCase.getSpecificProductUseCase(id).collectLatest {
+                when(it){
+                    is ResultState.Loading -> {
+                        _getSpecificProductState.value = GetSpecificProductState(isLoading = true)
+                    }
+                    is ResultState.Success -> {
+                        _getSpecificProductState.value = GetSpecificProductState(success = it.data)
+                        Log.d("TAGVM", "getSpecificProduct: ${it.data}")
+                    }
+                    is ResultState.Error -> {
+                        _getSpecificProductState.value = GetSpecificProductState(error = it.message)
+                    }
+                }
+            }
+        }
+    }
 
 
     fun registerUserWithEmailPass(userData: UserData){
@@ -127,4 +202,22 @@ data class SignInUserWithEmailPassState(
     val isLoading: Boolean = false,
     val error: String? = null,
     var success: String? = null
+)
+
+data class GetSpecificProductState(
+    val isLoading:Boolean = false,
+    val error: String? = null,
+    val success: Product? = null
+)
+
+data class GetUserByIdState(
+    val isLoading:Boolean = false,
+    val error: String? = null,
+    val success: UserData? = null
+)
+
+data class UpdateUserDataState(
+    val isLoading:Boolean = false,
+    val error: String? = null,
+    val success: String? = null
 )
