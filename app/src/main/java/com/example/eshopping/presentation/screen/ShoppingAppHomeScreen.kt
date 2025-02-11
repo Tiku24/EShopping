@@ -1,11 +1,13 @@
 package com.example.eshopping.presentation.screen
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,85 +16,112 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.eshopping.data.model.Category
 import com.example.eshopping.presentation.navigation.Routes
 import com.example.eshopping.presentation.viewmodel.GetProductCategoryState
 import com.example.eshopping.presentation.viewmodel.MainViewModel
+import com.example.eshopping.presentation.viewmodel.SearchProductState
 import com.example.eshopping.ui.theme.Montserrat
 import com.example.eshopping.ui.theme.MontserratMedium
 import com.example.eshopping.ui.theme.MontserratRegular
 
 
 @Composable
-fun ShoppingAppHomeScreen(modifier: Modifier, categoryProductState: GetProductCategoryState,navController: NavController) {
+fun ShoppingAppHomeScreen(modifier: Modifier, categoryProductState: GetProductCategoryState,navController: NavController,vm: MainViewModel= hiltViewModel()) {
     Column(
         modifier
             .fillMaxSize()
             .padding(horizontal = 5.dp)
     ) {
-        SearchBar()
-        CategorySection(categoryProductState)
-        ProductGrid(categoryProductState,navController)
+        val searchState = vm.searchProductState.collectAsStateWithLifecycle()
+        val query = remember { mutableStateOf("") }
+        LaunchedEffect(Unit) {
+            vm.searchQuery()
+        }
+        SearchBar(query,searchState,vm)
+        if (query.value.isNotEmpty() && searchState.value.success!!.isNotEmpty()){
+            LazyVerticalGrid(
+                modifier = Modifier.fillMaxSize(),
+                columns = GridCells.Fixed(2),
+                horizontalArrangement = Arrangement.spacedBy(45.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(45.dp)
+            ) {
+                items(searchState.value.success ?: emptyList()){
+                    ProductItem(imageUrl = it.image, name = it.name, price = it.price, finalPrice = it.finalPrice, onClick = {
+                        navController.navigate(Routes.ProductDetailScreen(it.pId))
+                    },vm)
+                }
+            }
+        }
+        else {
+            CategorySection(categoryProductState)
+            ProductGrid(categoryProductState, navController)
+        }
     }
 }
 
 @Composable
-fun SearchBar() {
-    BasicTextField(
-        value = "",
-        onValueChange = {},
+fun SearchBar(query: MutableState<String>, searchState: State<SearchProductState>,vm: MainViewModel) {
+
+
+    when{
+        searchState.value.isLoading -> {
+            CircularProgressIndicator(modifier = Modifier.fillMaxSize().wrapContentSize())
+        }
+        searchState.value.success != null -> {
+            Log.d("SearchBar", searchState.value.success.toString())
+        }
+    }
+    OutlinedTextField(
+        value = query.value,
+        onValueChange = {
+            query.value = it
+            vm.onSearchQueryChange(it)
+        },
+        colors = TextFieldDefaults.colors(focusedIndicatorColor = Color(232, 144, 142), unfocusedContainerColor = Color.White, focusedContainerColor = Color.White),
+        placeholder = { Text("Search") },
+        shape = RoundedCornerShape(19.dp),
         modifier = Modifier
             .fillMaxWidth()
             .height(50.dp)
             .padding(horizontal = 8.dp)
-            .border(width = 1.dp, color = Color(232, 144, 142), shape = RoundedCornerShape(15.dp))
-            .background(Color(250, 249, 253), shape = RoundedCornerShape(15.dp)),
-        decorationBox = { innerTextField ->
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Spacer(modifier = Modifier.width(8.dp))
-                Icon(
-                    painter = painterResource(id = android.R.drawable.ic_menu_search),
-                    contentDescription = "Search Icon",
-                    tint = Color.Gray
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                if ("".isEmpty()) {
-                    Text(
-                        text = "Search products...",
-                        style = TextStyle(fontSize = 16.sp, color = Color.Gray)
-                    )
-                }
-                innerTextField()
-            }
-        }
+            .border(width = 2.dp, color = Color(232, 144, 142), shape = RoundedCornerShape(19.dp))
     )
     Spacer(modifier = Modifier.height(20.dp))
 }

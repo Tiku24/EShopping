@@ -14,4 +14,5 @@ interface Repo {
     suspend fun getSpecificProduct(id:String): Flow<ResultState<Product>>
     suspend fun getUserById(uid: String): Flow<ResultState<UserData>>
     suspend fun updateUserData(updatedFields: Map<String, Any?>): Flow<ResultState<String>>
+    suspend fun searchProduct(query:String) : Flow<ResultState<List<Product>>>
 }

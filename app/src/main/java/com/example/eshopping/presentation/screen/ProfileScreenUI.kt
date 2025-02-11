@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
@@ -94,7 +95,7 @@ fun ProfileScreenUI(
 
     when {
         userState.value.isLoading -> {
-            CircularProgressIndicator()
+            CircularProgressIndicator(modifier = Modifier.fillMaxSize().wrapContentSize())
         }
 
         userState.value.error != null -> {

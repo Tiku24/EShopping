@@ -129,4 +129,23 @@ class RepoImpl @Inject constructor(private val firestore: FirebaseFirestore,priv
             close()
         }
     }
+
+    override suspend fun searchProduct(query: String): Flow<ResultState<List<Product>>> = callbackFlow{
+        trySend(ResultState.Loading)
+        firestore.collection(PRODUCT).orderBy("name")
+            .startAt(query).get()
+            .addOnSuccessListener {
+                val product = it.documents.mapNotNull {
+                    it.toObject(Product::class.java)?.apply {
+                        pId = it.id
+                    }
+                }
+                trySend(ResultState.Success(product))
+            }.addOnFailureListener {
+            trySend(ResultState.Error(message = it.message.toString()))
+        }
+        awaitClose {
+            close()
+        }
+    }
 }

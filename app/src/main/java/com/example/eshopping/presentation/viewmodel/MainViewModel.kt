@@ -12,6 +12,7 @@ import com.example.eshopping.domain.usecase.GetProductUseCase
 import com.example.eshopping.domain.usecase.GetSpecificProductUseCase
 import com.example.eshopping.domain.usecase.GetUserByIdUseCase
 import com.example.eshopping.domain.usecase.RegisterUserWithEmailPassUseCase
+import com.example.eshopping.domain.usecase.SearchProductUseCase
 import com.example.eshopping.domain.usecase.SignInUserWithEmailPassUseCase
 import com.example.eshopping.domain.usecase.UpdateUserDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,7 +34,8 @@ class MainViewModel @Inject constructor(
     private val signInUserWithEmailPassUseCase: SignInUserWithEmailPassUseCase,
     private val getSpecificProductUseCase: GetSpecificProductUseCase,
     private val getUserByIdUseCase: GetUserByIdUseCase,
-    private val updateUserDataUseCase: UpdateUserDataUseCase
+    private val updateUserDataUseCase: UpdateUserDataUseCase,
+    private val searchProductUseCase: SearchProductUseCase
 ) :ViewModel() {
     private val _getProductCategoryState = MutableStateFlow(GetProductCategoryState())
     val getProductCategoryState = _getProductCategoryState.asStateFlow()
@@ -54,6 +57,46 @@ class MainViewModel @Inject constructor(
 
     private val _updateUserDataState = MutableStateFlow(UpdateUserDataState())
     val updateUserDataState = _updateUserDataState.asStateFlow()
+
+    private val _searchProductState = MutableStateFlow(SearchProductState())
+    val searchProductState = _searchProductState.asStateFlow()
+
+
+    val _searchQuery = MutableStateFlow("")
+    fun onSearchQueryChange(query: String) {
+        _searchQuery.value = query
+    }
+
+
+    fun searchQuery(){
+        viewModelScope.launch {
+            _searchQuery
+                .debounce(500L)
+                .collect{
+                    if (it.isNotEmpty()){
+                        searchProduct(it)
+                    }
+            }
+        }
+    }
+
+    fun searchProduct(query: String){
+        viewModelScope.launch {
+            searchProductUseCase.searchProductUseCase(query.uppercase()).collectLatest {
+                when(it){
+                    is ResultState.Loading -> {
+                        _searchProductState.value = SearchProductState(isLoading = true)
+                    }
+                    is ResultState.Success -> {
+                        _searchProductState.value = SearchProductState(success = it.data)
+                    }
+                    is ResultState.Error -> {
+                        _searchProductState.value = SearchProductState(error = it.message)
+                    }
+                }
+            }
+        }
+    }
 
 
     fun updateUser(updatedFields: Map<String, Any?>){
@@ -220,4 +263,10 @@ data class UpdateUserDataState(
     val isLoading:Boolean = false,
     val error: String? = null,
     val success: String? = null
+)
+
+data class SearchProductState(
+    val isLoading:Boolean = false,
+    val error: String? = null,
+    val success: List<Product>? = emptyList()
 )
