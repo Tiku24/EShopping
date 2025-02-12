@@ -14,5 +14,7 @@ data class Product(
 //    val isAvailable : Boolean = true,
     val availableUnits : Int = 0,
     val date : Long = System.currentTimeMillis(),
-    val createdBy:String=""
+    val createdBy:String="",
+    val colors: List<String> = emptyList(),
+    val sizes: List<String> = emptyList()
 )

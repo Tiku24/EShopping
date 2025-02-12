@@ -1,7 +1,10 @@
 package com.example.eshopping.presentation.screen
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,11 +37,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -58,6 +66,7 @@ fun ProductScreenUI(
     navController: NavController
 ) {
     val state = vm.getSpecificProductState.collectAsState()
+
     LaunchedEffect(Unit) {
         vm.getSpecificProduct(id = id)
     }
@@ -82,6 +91,12 @@ fun ProductScreenUI(
 @Composable
 fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: NavController) {
     val data = state.value.success
+    val color = data?.colors
+    val size = data?.sizes
+    val availableUnits = data?.availableUnits
+    val quantity = remember { mutableStateOf(1) }
+
+    Log.d("QAU", "${quantity.value}")
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -183,7 +198,7 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
                 )
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Size Section
             Row(
@@ -197,12 +212,16 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
                 )
                 Row(
                     modifier = Modifier
-                        .padding(10.dp),
+                        .padding(5.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
                     // Decrease Button
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = {
+                        if (quantity.value > 1) {
+                            quantity.value--
+                        }
+                    }) {
                         Icon(
                             Icons.Filled.Remove,
                             contentDescription = "Decrease Quantity",
@@ -212,19 +231,20 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
 
                     // Quantity Text
                     Text(
-                        text = "1",
+                        text = quantity.value.toString(),
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.Bold,
                             fontSize = 20.sp
                         ),
                         modifier = Modifier
-                            .border(1.dp, Color.Black, RectangleShape)
-                            .background(Color(232, 144, 142), shape = RectangleShape)
                             .padding(horizontal = 10.dp)
                     )
 
                     // Increase Button
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = {
+                        if (quantity.value < availableUnits!!) {
+                            quantity.value++
+                        }
+                    }) {
                         Icon(
                             Icons.Filled.Add,
                             contentDescription = "Increase Quantity",
@@ -234,18 +254,22 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                repeat(3) { index ->
+                var selectedSize by remember { mutableStateOf(size?.first()) }
+                size?.forEach { s ->
                     Box(
                         modifier = Modifier
-                            .size(40.dp)
-                            .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-                            .background(Color.White),
+                            .size(30.dp)
+                            .border(
+                                width = if (selectedSize == s) 2.dp else 1.dp,
+                                color = if (selectedSize == s) Color.Black else Color.Gray,
+                                RoundedCornerShape(8.dp)
+                            )
+                            .background(Color.White)
+                            .clickable { selectedSize = s },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "UK ${8 + index}", style = TextStyle(fontSize = 14.sp))
+                        Text(text = s, style = TextStyle(fontSize = 14.sp))
                     }
                 }
             }
@@ -261,13 +285,37 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                val colors = listOf(Color(0xFFFFC1CC), Color(0xFF80DEEA), Color(0xFFFFFF72))
-                colors.forEach { color ->
+
+                val colorMap = mapOf(
+                    "red" to Color.Red,
+                    "blue" to Color.Blue,
+                    "black" to Color.Black,
+                    "white" to Color.White,
+                    "green" to Color.Green,
+                    "yellow" to Color.Yellow,
+                    "gray" to Color.Gray,
+                    "cyan" to Color.Cyan
+                )
+                fun getColorFromName(colorName: String): Color {
+                    return colorMap[colorName] ?: Color.Gray // Default to Gray if not found
+                }
+                var selectedColor by remember { mutableStateOf(color?.first()) }
+                val context =LocalContext.current
+
+                color?.forEach { clr ->
                     Box(
                         modifier = Modifier
                             .size(30.dp)
-                            .background(color, shape = CircleShape)
-                            .border(1.dp, Color.Gray, CircleShape)
+                            .background(getColorFromName(clr), shape = CircleShape)
+                            .border(
+                                width = if (selectedColor == clr) 2.dp else 1.dp,
+                                color = if (selectedColor == clr) Color.Black else Color.Gray,
+                                CircleShape
+                            )
+                            .clickable {
+                                selectedColor = clr
+                                Toast.makeText(context, clr, Toast.LENGTH_SHORT).show()
+                            }
                     )
                 }
             }
@@ -304,7 +352,7 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
             Button(
                 onClick = { /* Buy now action */ },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF06292))
+                colors = ButtonDefaults.buttonColors(containerColor = Color(232, 144, 142))
             ) {
                 Text(text = "Buy now", color = Color.White)
             }
