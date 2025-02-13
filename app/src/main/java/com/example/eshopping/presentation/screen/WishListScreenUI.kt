@@ -9,6 +9,6 @@ import com.example.eshopping.presentation.viewmodel.MainViewModel
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun WishListScreenUI(modifier: Modifier = Modifier,vm:MainViewModel= hiltViewModel()) {
+fun WishListScreenUI(modifier: Modifier = Modifier,vm:MainViewModel) {
 
 }

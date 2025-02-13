@@ -62,7 +62,7 @@ import com.example.eshopping.ui.theme.MontserratRegular
 
 
 @Composable
-fun ShoppingAppHomeScreen(modifier: Modifier, categoryProductState: GetProductCategoryState,navController: NavController,vm: MainViewModel= hiltViewModel()) {
+fun ShoppingAppHomeScreen(modifier: Modifier, categoryProductState: GetProductCategoryState,navController: NavController,vm: MainViewModel) {
     Column(
         modifier
             .fillMaxSize()
@@ -91,7 +91,7 @@ fun ShoppingAppHomeScreen(modifier: Modifier, categoryProductState: GetProductCa
         }
         else {
             CategorySection(categoryProductState)
-            ProductGrid(categoryProductState, navController)
+            ProductGrid(categoryProductState, navController,vm)
         }
     }
 }
@@ -173,7 +173,7 @@ fun CategoryChip(category: Category) {
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun ProductGrid(categoryProductState: GetProductCategoryState,navController: NavController,vm:MainViewModel= hiltViewModel()) {
+fun ProductGrid(categoryProductState: GetProductCategoryState,navController: NavController,vm:MainViewModel) {
     val context = LocalContext.current
     Row(modifier = Modifier
         .fillMaxWidth()

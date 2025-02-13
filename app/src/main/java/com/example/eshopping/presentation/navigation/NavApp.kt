@@ -57,6 +57,7 @@ import com.example.eshopping.presentation.screen.CartScreenUI
 import com.example.eshopping.presentation.screen.HomeScreenUI
 import com.example.eshopping.presentation.screen.ProductScreenUI
 import com.example.eshopping.presentation.screen.ProfileScreenUI
+import com.example.eshopping.presentation.screen.ShippingScreenUI
 import com.example.eshopping.presentation.screen.SignInScreenUI
 import com.example.eshopping.presentation.screen.SignUpScreenUI
 import com.example.eshopping.presentation.screen.WishListScreenUI
@@ -66,6 +67,7 @@ import com.google.firebase.auth.FirebaseAuth
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun NavApp(auth: FirebaseAuth) {
+    val vm: MainViewModel = hiltViewModel()
     val navController = rememberNavController()
     var selectedIndex by remember { mutableIntStateOf(0) }
     var shouldShowBottomBar by remember { mutableStateOf(false) }
@@ -149,30 +151,34 @@ fun NavApp(auth: FirebaseAuth) {
             NavHost(navController = navController, startDestination = StartScreen) {
                 navigation<SubNavigation.SignUpSignInScreen>(startDestination = Routes.SignInScreen){
                     composable<Routes.SignInScreen> {
-                        SignInScreenUI(navController = navController)
+                        SignInScreenUI(navController = navController, vm = vm)
                     }
                     composable<Routes.SignUpScreen> {
-                        SignUpScreenUI(navController=navController)
+                        SignUpScreenUI(navController=navController,vm=vm)
                     }
                 }
 
                 navigation<SubNavigation.MainHomeScreen>(startDestination = Routes.HomeScreen){
                     composable<Routes.HomeScreen> {
-                        HomeScreenUI(navController=navController)
+                        HomeScreenUI(navController=navController, vm = vm)
                     }
                     composable<Routes.WishListScreen> {
-                        WishListScreenUI()
+                        WishListScreenUI(vm=vm)
                     }
                     composable<Routes.CartScreen> {
                         CartScreenUI()
                     }
                     composable<Routes.ProfileScreen> {
-                        ProfileScreenUI(auth = auth, navController = navController)
+                        ProfileScreenUI(auth = auth, navController = navController, vm = vm)
+                    }
+                    composable<Routes.ShippingScreen> {
+                        val data = it.toRoute<Product>()
+                        ShippingScreenUI(name = data.name, image = data.image, price = data.price, vm = vm)
                     }
                 }
                 composable<Routes.ProductDetailScreen> {
                     val data = it.toRoute<Product>()
-                    ProductScreenUI(id = data.pId, navController = navController)
+                    ProductScreenUI(id = data.pId, navController = navController, vm = vm)
                 }
             }
         }

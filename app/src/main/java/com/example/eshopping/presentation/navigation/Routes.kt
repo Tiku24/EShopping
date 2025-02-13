@@ -30,5 +30,12 @@ sealed class Routes {
     object WishListScreen
 
     @Serializable
+    data class ShippingScreen(
+        val name: String,
+        val price:String,
+        val image:String
+    )
+
+    @Serializable
     data class ProductDetailScreen(val pId:String)
 }

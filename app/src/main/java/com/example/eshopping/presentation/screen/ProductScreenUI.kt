@@ -1,5 +1,6 @@
 package com.example.eshopping.presentation.screen
 
+import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -40,6 +41,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,14 +57,17 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.eshopping.presentation.navigation.Routes
 import com.example.eshopping.presentation.viewmodel.GetSpecificProductState
 import com.example.eshopping.presentation.viewmodel.MainViewModel
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProductScreenUI(
     id: String,
     modifier: Modifier = Modifier,
-    vm: MainViewModel = hiltViewModel(),
+    vm: MainViewModel,
     navController: NavController
 ) {
     val state = vm.getSpecificProductState.collectAsState()
@@ -73,7 +78,7 @@ fun ProductScreenUI(
 
     when {
         state.value.success != null -> {
-            ProductDetailScreen(state, navController)
+            ProductDetailScreen(state, navController,vm)
         }
 
         state.value.isLoading -> {
@@ -88,13 +93,17 @@ fun ProductScreenUI(
     }
 }
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: NavController) {
+fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: NavController,vm: MainViewModel) {
     val data = state.value.success
     val color = data?.colors
     val size = data?.sizes
     val availableUnits = data?.availableUnits
     val quantity = remember { mutableStateOf(1) }
+    var selectedColor =vm.selectedColor.collectAsState()
+    val selectedSize = vm.selectedSize.collectAsState()
+
 
     Log.d("QAU", "${quantity.value}")
     Column(
@@ -255,18 +264,19 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                var selectedSize by remember { mutableStateOf(size?.first()) }
                 size?.forEach { s ->
                     Box(
                         modifier = Modifier
                             .size(30.dp)
                             .border(
-                                width = if (selectedSize == s) 2.dp else 1.dp,
-                                color = if (selectedSize == s) Color.Black else Color.Gray,
+                                width = if (selectedSize.value == s) 2.dp else 1.dp,
+                                color = if (selectedSize.value == s) Color.Black else Color.Gray,
                                 RoundedCornerShape(8.dp)
                             )
                             .background(Color.White)
-                            .clickable { selectedSize = s },
+                            .clickable {
+                                vm.updateSelectedSize(s)
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(text = s, style = TextStyle(fontSize = 14.sp))
@@ -299,7 +309,6 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
                 fun getColorFromName(colorName: String): Color {
                     return colorMap[colorName] ?: Color.Gray // Default to Gray if not found
                 }
-                var selectedColor by remember { mutableStateOf(color?.first()) }
                 val context =LocalContext.current
 
                 color?.forEach { clr ->
@@ -308,13 +317,12 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
                             .size(30.dp)
                             .background(getColorFromName(clr), shape = CircleShape)
                             .border(
-                                width = if (selectedColor == clr) 2.dp else 1.dp,
-                                color = if (selectedColor == clr) Color.Black else Color.Gray,
+                                width = if (selectedColor.value == clr) 2.dp else 1.dp,
+                                color = if (selectedColor.value == clr) Color.Black else Color.Gray,
                                 CircleShape
                             )
                             .clickable {
-                                selectedColor = clr
-                                Toast.makeText(context, clr, Toast.LENGTH_SHORT).show()
+                                vm.updateSelectedColor(clr)
                             }
                     )
                 }
@@ -350,7 +358,9 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
         // Buttons
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
             Button(
-                onClick = { /* Buy now action */ },
+                onClick = {
+                    navController.navigate(Routes.ShippingScreen(name = data!!.name, image = data.image, price = data.finalPrice))
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(232, 144, 142))
             ) {

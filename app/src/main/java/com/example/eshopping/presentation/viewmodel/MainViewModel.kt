@@ -18,6 +18,7 @@ import com.example.eshopping.domain.usecase.UpdateUserDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -61,11 +62,33 @@ class MainViewModel @Inject constructor(
     private val _searchProductState = MutableStateFlow(SearchProductState())
     val searchProductState = _searchProductState.asStateFlow()
 
-
     val _searchQuery = MutableStateFlow("")
+
+
+    val _selectedSize = MutableStateFlow("")
+    val selectedSize: StateFlow<String> get() = _selectedSize
+
+    val _selectedColor = MutableStateFlow("")
+    val selectedColor: StateFlow<String> get() = _selectedColor
+
+    fun updateSelectedSize(newSize: String) {
+        Log.d("TAGSize", "Before Update: ${_selectedSize.value}")
+        _selectedSize.value = newSize
+        Log.d("TAGSize", "After Update: ${_selectedSize.value}")
+    }
+
+    fun updateSelectedColor(newColor: String) {
+        _selectedColor.value = newColor
+    }
+
+    fun resetSize(){
+        _selectedSize.value = ""
+    }
+
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
     }
+
 
 
     fun searchQuery(){

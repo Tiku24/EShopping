@@ -57,7 +57,7 @@ import com.google.firebase.auth.FirebaseAuth
 @Composable
 fun ProfileScreenUI(
     auth: FirebaseAuth,
-    vm:MainViewModel = hiltViewModel(),
+    vm:MainViewModel,
     navController: NavController
 ) {
 

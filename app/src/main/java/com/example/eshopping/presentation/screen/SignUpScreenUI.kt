@@ -46,7 +46,7 @@ import kotlinx.coroutines.launch
 @SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignUpScreenUI(modifier: Modifier = Modifier,vm: MainViewModel= hiltViewModel(),navController: NavController) {
+fun SignUpScreenUI(modifier: Modifier = Modifier,vm: MainViewModel,navController: NavController) {
     val state by vm.registerUserWithEmailPassState.collectAsState()
     val context = LocalContext.current
 

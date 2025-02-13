@@ -49,7 +49,7 @@ import com.example.eshopping.presentation.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignInScreenUI(modifier: Modifier = Modifier,vm: MainViewModel= hiltViewModel(),navController: NavController) {
+fun SignInScreenUI(modifier: Modifier = Modifier,vm: MainViewModel,navController: NavController) {
     val context = LocalContext.current
     val state by vm.signInUserWithEmailPassState.collectAsState()
 
