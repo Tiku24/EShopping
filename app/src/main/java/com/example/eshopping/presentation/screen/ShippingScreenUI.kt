@@ -36,17 +36,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.eshopping.MainActivity
 import com.example.eshopping.presentation.viewmodel.MainViewModel
 
 
 @Composable
 fun ShippingScreenUI(image: String, name: String, price: String,vm: MainViewModel) {
     val scrollState = rememberScrollState()
+    val context= LocalContext.current
+    val activity = context as? MainActivity
 
     Column(
         modifier = Modifier
@@ -98,7 +102,10 @@ fun ShippingScreenUI(image: String, name: String, price: String,vm: MainViewMode
 
                 // Continue to Shipping Button
                 Button(
-                    onClick = { /* Handle continue to shipping */ },
+                    onClick = { activity?.startPayment(
+                        name = name,
+                        amount = price
+                    ) },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(232, 144, 142))
                 ) {
@@ -299,7 +306,7 @@ fun ShippingMethod() {
         ) {
             RadioButton(
                 selected = isSelected.value,
-                onClick = { isSelected.value = !isSelected.value }
+                onClick = { isSelected.value=true }
             )
             Text(
                 text = "Standard FREE delivery over Rs:4500(Free)",
@@ -312,7 +319,7 @@ fun ShippingMethod() {
         ) {
             RadioButton(
                 selected = !isSelected.value,
-                onClick = { isSelected.value = !isSelected.value }
+                onClick = { isSelected.value=false }
             )
             Text(
                 text = "Cash on delivery over Rs:4500 (Free Delivery, COD processing fee 100 only)",

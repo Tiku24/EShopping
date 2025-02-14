@@ -71,4 +71,5 @@ dependencies {
     implementation(libs.coil.compose)
     implementation("androidx.navigation:navigation-compose:2.8.5")
     implementation("androidx.compose.material:material-icons-extended:1.7.6")
+    implementation ("com.razorpay:checkout:1.6.41")
 }
