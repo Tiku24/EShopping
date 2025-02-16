@@ -173,7 +173,7 @@ fun NavApp(auth: FirebaseAuth) {
                     }
                     composable<Routes.ShippingScreen> {
                         val data = it.toRoute<Product>()
-                        ShippingScreenUI(name = data.name, image = data.image, price = data.price, vm = vm)
+                        ShippingScreenUI(name = data.name, image = data.image, price = data.price, vm = vm, auth = auth)
                     }
                 }
                 composable<Routes.ProductDetailScreen> {

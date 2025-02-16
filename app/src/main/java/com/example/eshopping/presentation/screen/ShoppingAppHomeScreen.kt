@@ -47,7 +47,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -73,7 +72,7 @@ fun ShoppingAppHomeScreen(modifier: Modifier, categoryProductState: GetProductCa
         LaunchedEffect(Unit) {
             vm.searchQuery()
         }
-        SearchBar(query,searchState,vm)
+        SearchBarNotification(query,searchState,vm)
         if (query.value.isNotEmpty() && searchState.value.success!!.isNotEmpty()){
             LazyVerticalGrid(
                 modifier = Modifier.fillMaxSize(),
@@ -97,7 +96,7 @@ fun ShoppingAppHomeScreen(modifier: Modifier, categoryProductState: GetProductCa
 }
 
 @Composable
-fun SearchBar(query: MutableState<String>, searchState: State<SearchProductState>,vm: MainViewModel) {
+fun SearchBarNotification(query: MutableState<String>, searchState: State<SearchProductState>, vm: MainViewModel) {
 
 
     when{

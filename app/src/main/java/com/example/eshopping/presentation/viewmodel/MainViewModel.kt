@@ -6,14 +6,18 @@ import androidx.lifecycle.viewModelScope
 import com.example.eshopping.common.ResultState
 import com.example.eshopping.data.model.Category
 import com.example.eshopping.data.model.Product
+import com.example.eshopping.data.model.ShippingAddress
 import com.example.eshopping.data.model.UserData
+import com.example.eshopping.domain.usecase.AddShippingAddressUseCase
 import com.example.eshopping.domain.usecase.GetCategoryUseCase
 import com.example.eshopping.domain.usecase.GetProductUseCase
+import com.example.eshopping.domain.usecase.GetShippingAddressUseCase
 import com.example.eshopping.domain.usecase.GetSpecificProductUseCase
 import com.example.eshopping.domain.usecase.GetUserByIdUseCase
 import com.example.eshopping.domain.usecase.RegisterUserWithEmailPassUseCase
 import com.example.eshopping.domain.usecase.SearchProductUseCase
 import com.example.eshopping.domain.usecase.SignInUserWithEmailPassUseCase
+import com.example.eshopping.domain.usecase.UpdateShippingAddressUseCase
 import com.example.eshopping.domain.usecase.UpdateUserDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -36,7 +40,10 @@ class MainViewModel @Inject constructor(
     private val getSpecificProductUseCase: GetSpecificProductUseCase,
     private val getUserByIdUseCase: GetUserByIdUseCase,
     private val updateUserDataUseCase: UpdateUserDataUseCase,
-    private val searchProductUseCase: SearchProductUseCase
+    private val searchProductUseCase: SearchProductUseCase,
+    private val addShippingAddressUseCase: AddShippingAddressUseCase,
+    private val getShippingAddressUseCase: GetShippingAddressUseCase,
+    private val updateShippingAddressUseCase: UpdateShippingAddressUseCase
 ) :ViewModel() {
     private val _getProductCategoryState = MutableStateFlow(GetProductCategoryState())
     val getProductCategoryState = _getProductCategoryState.asStateFlow()
@@ -62,6 +69,15 @@ class MainViewModel @Inject constructor(
     private val _searchProductState = MutableStateFlow(SearchProductState())
     val searchProductState = _searchProductState.asStateFlow()
 
+    private val _addShippingAddressState = MutableStateFlow(AddShippingAddressState())
+    val addShippingAddressState = _addShippingAddressState.asStateFlow()
+
+    private val _getShippingAddressState = MutableStateFlow(GetShippingAddressState())
+    val getShippingAddressState = _getShippingAddressState.asStateFlow()
+
+    private val _updateShippingAddressState = MutableStateFlow(UpdateShippingAddressState())
+    val updateShippingAddressState = _updateShippingAddressState.asStateFlow()
+
     val _searchQuery = MutableStateFlow("")
 
 
@@ -85,6 +101,10 @@ class MainViewModel @Inject constructor(
         _selectedSize.value = ""
     }
 
+    fun resetColor(){
+        _selectedColor.value = ""
+    }
+
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
     }
@@ -103,6 +123,43 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun getShippingAddress(id:String){
+        viewModelScope.launch(Dispatchers.IO) {
+            getShippingAddressUseCase.getShippingAddressUseCase(id).collectLatest {
+                when(it){
+                    is ResultState.Loading -> {
+                        _getShippingAddressState.value = GetShippingAddressState(isLoading = true)
+                    }
+                    is ResultState.Success -> {
+                        _getShippingAddressState.value = GetShippingAddressState(success = it.data)
+                        Log.d("TAGETSHIP", "getShippingAddress: ${it.data}")
+                    }
+                    is ResultState.Error -> {
+                        _getShippingAddressState.value = GetShippingAddressState(error = it.message)
+                    }
+                }
+            }
+        }
+    }
+
+    fun addShippingAddress(shippingAddress: ShippingAddress){
+        viewModelScope.launch(Dispatchers.IO) {
+            addShippingAddressUseCase.addShippingAddressUseCase(shippingAddress).collectLatest {
+                when(it){
+                    is ResultState.Loading -> {
+                        _addShippingAddressState.value = AddShippingAddressState(isLoading = true)
+                    }
+                    is ResultState.Success -> {
+                        _addShippingAddressState.value = AddShippingAddressState(success = it.data)
+                    }
+                    is ResultState.Error -> {
+                        _addShippingAddressState.value = AddShippingAddressState(error = it.message)
+                    }
+                }
+            }
+        }
+    }
+
     fun searchProduct(query: String){
         viewModelScope.launch {
             searchProductUseCase.searchProductUseCase(query.uppercase()).collectLatest {
@@ -115,6 +172,24 @@ class MainViewModel @Inject constructor(
                     }
                     is ResultState.Error -> {
                         _searchProductState.value = SearchProductState(error = it.message)
+                    }
+                }
+            }
+        }
+    }
+
+    fun updateShippingAddress(addressId:String,updatedFields: Map<String, Any?>){
+        viewModelScope.launch(Dispatchers.IO) {
+            updateShippingAddressUseCase.updateShippingAddressUseCase(addressId,updatedFields).collectLatest {
+                when(it){
+                    is ResultState.Loading -> {
+                        _updateShippingAddressState.value = UpdateShippingAddressState(isLoading = true)
+                    }
+                    is ResultState.Success -> {
+                        _updateShippingAddressState.value = UpdateShippingAddressState(data = it.data)
+                    }
+                    is ResultState.Error -> {
+                        _updateShippingAddressState.value = UpdateShippingAddressState(error = it.message)
                     }
                 }
             }
@@ -248,6 +323,21 @@ class MainViewModel @Inject constructor(
             }
         }
     }
+    fun resetState(){
+        _getProductCategoryState.value = GetProductCategoryState()
+        _registerUserWithEmailPassState.value = RegisterUserWithEmailPassState()
+        _signInUserWithEmailPassState.value = SignInUserWithEmailPassState()
+        _getSpecificProductState.value = GetSpecificProductState()
+        _getUserByIdState.value = GetUserByIdState()
+        _updateUserDataState.value = UpdateUserDataState()
+        _searchProductState.value = SearchProductState()
+        _addShippingAddressState.value = AddShippingAddressState()
+        _getShippingAddressState.value = GetShippingAddressState()
+        _updateShippingAddressState.value = UpdateShippingAddressState()
+        _selectedSize.value = ""
+        _selectedColor.value = ""
+        _searchQuery.value = ""
+    }
 }
 
 
@@ -292,4 +382,22 @@ data class SearchProductState(
     val isLoading:Boolean = false,
     val error: String? = null,
     val success: List<Product>? = emptyList()
+)
+
+data class AddShippingAddressState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    var success: String? = null
+)
+
+data class GetShippingAddressState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val success: List<ShippingAddress>? = emptyList()
+)
+
+data class UpdateShippingAddressState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    var data: String? = null
 )

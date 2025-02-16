@@ -235,6 +235,7 @@ fun ProfileScreenUI(
                     }
 
                     Button(onClick = {
+                        vm.resetState()
                         auth.signOut()
                         navController.navigate(Routes.SignInScreen) },
                         modifier = Modifier

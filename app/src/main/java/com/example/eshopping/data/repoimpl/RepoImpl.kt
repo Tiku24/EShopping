@@ -1,12 +1,14 @@
 package com.example.eshopping.data.repoimpl
 
 import android.util.Log
+import com.example.eshopping.common.ADDRESSES
 import com.example.eshopping.common.CATEGORY
 import com.example.eshopping.common.PRODUCT
 import com.example.eshopping.common.ResultState
 import com.example.eshopping.common.USER
 import com.example.eshopping.data.model.Category
 import com.example.eshopping.data.model.Product
+import com.example.eshopping.data.model.ShippingAddress
 import com.example.eshopping.data.model.UserData
 import com.example.eshopping.domain.repo.Repo
 import com.google.firebase.auth.FirebaseAuth
@@ -144,6 +146,48 @@ class RepoImpl @Inject constructor(private val firestore: FirebaseFirestore,priv
             }.addOnFailureListener {
             trySend(ResultState.Error(message = it.message.toString()))
         }
+        awaitClose {
+            close()
+        }
+    }
+
+    override suspend fun addShippingAddress(shippingAddress: ShippingAddress): Flow<ResultState<String>> = callbackFlow{
+        trySend(ResultState.Loading)
+        firestore.collection(USER).document(auth.currentUser?.uid.toString()).collection(ADDRESSES).add(shippingAddress).addOnSuccessListener {
+            trySend(ResultState.Success("Address added successfully"))
+        }.addOnFailureListener {
+            trySend(ResultState.Error(message = it.message.toString()))
+        }
+        awaitClose {
+            close()
+        }
+    }
+
+    override suspend fun getShippingAddress(id:String): Flow<ResultState<List<ShippingAddress>>> = callbackFlow{
+        trySend(ResultState.Loading)
+        firestore.collection(USER).document(auth.currentUser?.uid.toString()).collection(ADDRESSES).get().addOnSuccessListener {
+            val address = it.documents.mapNotNull {
+                it.toObject(ShippingAddress::class.java)?.apply {
+                    this.id = it.id
+                }
+            }
+            trySend(ResultState.Success(address))
+        }.addOnFailureListener {
+            trySend(ResultState.Error(message = it.message.toString()))
+        }
+        awaitClose {
+            close()
+        }
+    }
+
+    override suspend fun updateShippingAddress(addressId:String,updatedFields: Map<String, Any?>): Flow<ResultState<String>> = callbackFlow{
+        trySend(ResultState.Loading)
+        firestore.collection(USER).document(auth.currentUser?.uid.toString()).collection(ADDRESSES)
+            .document(addressId).update(updatedFields).addOnSuccessListener {
+                trySend(ResultState.Success("Address updated successfully"))
+            }.addOnFailureListener {
+                trySend(ResultState.Error(message = it.message.toString()))
+            }
         awaitClose {
             close()
         }

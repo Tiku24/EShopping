@@ -43,6 +43,7 @@ fun HomeScreenUI(modifier: Modifier = Modifier,vm: MainViewModel,navController: 
     LaunchedEffect(Unit) {
         vm.loadProductCategory()
         vm.resetSize()
+        vm.resetColor()
     }
 
     when{
