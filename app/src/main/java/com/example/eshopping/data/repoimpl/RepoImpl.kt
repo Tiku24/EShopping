@@ -5,6 +5,7 @@ import com.example.eshopping.common.ADDRESSES
 import com.example.eshopping.common.CATEGORY
 import com.example.eshopping.common.PRODUCT
 import com.example.eshopping.common.ResultState
+import com.example.eshopping.common.TOKEN
 import com.example.eshopping.common.USER
 import com.example.eshopping.data.model.Category
 import com.example.eshopping.data.model.Product
@@ -13,12 +14,15 @@ import com.example.eshopping.data.model.UserData
 import com.example.eshopping.domain.repo.Repo
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.FirebaseMessagingService
+import com.google.firebase.messaging.RemoteMessage
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import javax.inject.Inject
 
-class RepoImpl @Inject constructor(private val firestore: FirebaseFirestore,private val auth: FirebaseAuth): Repo {
+class RepoImpl @Inject constructor(private val firestore: FirebaseFirestore,private val auth: FirebaseAuth,private val firebaseMessaging: FirebaseMessaging): Repo{
     override suspend fun getAllCategory(): Flow<ResultState<List<Category>>> = callbackFlow {
         trySend(ResultState.Loading)
         firestore.collection(CATEGORY).get().addOnSuccessListener {
@@ -66,6 +70,7 @@ class RepoImpl @Inject constructor(private val firestore: FirebaseFirestore,priv
             }.addOnFailureListener {
                 trySend(ResultState.Error(it.message.toString()))
             }
+            updateFcmToken(auth.currentUser?.uid.toString())
         }.addOnFailureListener {
             trySend(ResultState.Error(it.message.toString()))
         }
@@ -81,6 +86,7 @@ class RepoImpl @Inject constructor(private val firestore: FirebaseFirestore,priv
         trySend(ResultState.Loading)
         auth.signInWithEmailAndPassword(email,password).addOnSuccessListener {
             trySend(ResultState.Success("User logged in successfully"))
+            updateFcmToken(auth.currentUser?.uid.toString())
         }.addOnFailureListener {
             trySend(ResultState.Error(it.message.toString()))
         }
@@ -190,6 +196,29 @@ class RepoImpl @Inject constructor(private val firestore: FirebaseFirestore,priv
             }
         awaitClose {
             close()
+        }
+    }
+
+    init {
+        getToken()
+    }
+
+    private fun updateFcmToken(userId:String){
+        firebaseMessaging.token.addOnCompleteListener {
+            if(it.isSuccessful){
+                val token = it.result
+                firestore.collection(TOKEN).document(userId).set(mapOf("token" to token))
+            }
+        }
+    }
+    private fun getToken(){
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.e("FCM", "Fetching FCM token failed", task.exception)
+                return@addOnCompleteListener
+            }
+            val token = task.result
+            Log.d("FCM", "Device Token: $token")
         }
     }
 }

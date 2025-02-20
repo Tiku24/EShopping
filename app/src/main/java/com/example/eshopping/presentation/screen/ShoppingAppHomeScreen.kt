@@ -24,9 +24,14 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -107,21 +112,25 @@ fun SearchBarNotification(query: MutableState<String>, searchState: State<Search
             Log.d("SearchBar", searchState.value.success.toString())
         }
     }
-    OutlinedTextField(
-        value = query.value,
-        onValueChange = {
-            query.value = it
-            vm.onSearchQueryChange(it)
-        },
-        colors = TextFieldDefaults.colors(focusedIndicatorColor = Color(232, 144, 142), unfocusedContainerColor = Color.White, focusedContainerColor = Color.White),
-        placeholder = { Text("Search") },
-        shape = RoundedCornerShape(19.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp)
-            .padding(horizontal = 8.dp)
-            .border(width = 2.dp, color = Color(232, 144, 142), shape = RoundedCornerShape(19.dp))
-    )
+    Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        OutlinedTextField(
+            value = query.value,
+            onValueChange = {
+                query.value = it
+                vm.onSearchQueryChange(it)
+            },
+            leadingIcon = {Icon(imageVector = Icons.Default.Search, contentDescription = "Search Icon")},
+            colors = TextFieldDefaults.colors(focusedIndicatorColor = Color(232, 144, 142), unfocusedContainerColor = Color.White, focusedContainerColor = Color.White),
+            placeholder = { Text("Search") },
+            shape = RoundedCornerShape(15.dp),
+            modifier = Modifier
+                .weight(1f)
+                .height(50.dp)
+                .padding(horizontal = 5.dp)
+                .border(width = 1.dp, color = Color(232, 144, 142), shape = RoundedCornerShape(15.dp))
+        )
+        Icon(imageVector = Icons.Outlined.Notifications, tint = Color.Black,contentDescription = "notification icon",modifier = Modifier.size(32.dp))
+    }
     Spacer(modifier = Modifier.height(20.dp))
 }
 
