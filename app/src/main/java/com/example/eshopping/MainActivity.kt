@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
     }
 
      fun startPayment(
-         amount: String,
+         amount: Int,
          name: String,
      ) {
          val checkout = Checkout()

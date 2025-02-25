@@ -5,9 +5,12 @@ import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
@@ -104,7 +108,6 @@ fun ProfileScreenUI(
 
         userState.value.success != null -> {
 
-
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -115,15 +118,12 @@ fun ProfileScreenUI(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Color(232, 144, 142))
-                        .padding(vertical = 40.dp, horizontal = 16.dp)
+                        .padding(vertical = 30.dp, horizontal = 16.dp),
+                    contentAlignment = Alignment.TopStart
                 ) {
-                    Text(
-                        fontSize = 20.sp,
-                        text = "Personal Details",
-                        color = Color.White,
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.align(Alignment.TopCenter)
-                    )
+                        IconButton(onClick = {
+                            navController.popBackStack()
+                        }){ Icon(imageVector = Icons.Filled.ArrowBackIosNew,contentDescription = null, tint = Color.White) }
                 }
 
                 Column(

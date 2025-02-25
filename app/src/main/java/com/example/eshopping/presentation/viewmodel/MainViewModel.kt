@@ -5,10 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.eshopping.common.ResultState
 import com.example.eshopping.data.model.Category
+import com.example.eshopping.data.model.Cart
 import com.example.eshopping.data.model.Product
 import com.example.eshopping.data.model.ShippingAddress
 import com.example.eshopping.data.model.UserData
 import com.example.eshopping.domain.usecase.AddShippingAddressUseCase
+import com.example.eshopping.domain.usecase.AddToCartUseCase
+import com.example.eshopping.domain.usecase.DeleteCartItemUseCase
+import com.example.eshopping.domain.usecase.GetCartItemsUseCase
 import com.example.eshopping.domain.usecase.GetCategoryUseCase
 import com.example.eshopping.domain.usecase.GetProductUseCase
 import com.example.eshopping.domain.usecase.GetShippingAddressUseCase
@@ -43,7 +47,10 @@ class MainViewModel @Inject constructor(
     private val searchProductUseCase: SearchProductUseCase,
     private val addShippingAddressUseCase: AddShippingAddressUseCase,
     private val getShippingAddressUseCase: GetShippingAddressUseCase,
-    private val updateShippingAddressUseCase: UpdateShippingAddressUseCase
+    private val updateShippingAddressUseCase: UpdateShippingAddressUseCase,
+    private val addToCartUseCase: AddToCartUseCase,
+    private val getCartItemsUseCase: GetCartItemsUseCase,
+    private val deleteCartItemUseCase: DeleteCartItemUseCase
 ) :ViewModel() {
     private val _getProductCategoryState = MutableStateFlow(GetProductCategoryState())
     val getProductCategoryState = _getProductCategoryState.asStateFlow()
@@ -77,6 +84,18 @@ class MainViewModel @Inject constructor(
 
     private val _updateShippingAddressState = MutableStateFlow(UpdateShippingAddressState())
     val updateShippingAddressState = _updateShippingAddressState.asStateFlow()
+
+    private val _addToCartState = MutableStateFlow(AddToCartState())
+    val addToCartState = _addToCartState.asStateFlow()
+
+    private val _getCartItemsState = MutableStateFlow(GetCartItemsState())
+    val getCartItemsState = _getCartItemsState.asStateFlow()
+
+    private val _deleteCartItemState = MutableStateFlow(AddToCartState())
+    val deleteCartItemState = _deleteCartItemState.asStateFlow()
+
+    var totalAmount = MutableStateFlow(0)
+
 
     val _searchQuery = MutableStateFlow("")
 
@@ -119,6 +138,63 @@ class MainViewModel @Inject constructor(
                     if (it.isNotEmpty()){
                         searchProduct(it)
                     }
+            }
+        }
+    }
+
+    fun deleteCartItem(cId: String){
+        viewModelScope.launch(Dispatchers.IO) {
+            deleteCartItemUseCase.deleteCartItemUseCase(cId).collectLatest {
+                when(it){
+                    is ResultState.Loading -> {
+                        _deleteCartItemState.value = AddToCartState(isLoading = true)
+                    }
+                    is ResultState.Success -> {
+                        _deleteCartItemState.value = AddToCartState(data = it.data)
+                    }
+                    is ResultState.Error -> {
+                        _deleteCartItemState.value = AddToCartState(error = it.message)
+                    }
+                }
+            }
+        }
+
+    }
+
+    fun getCartItems(){
+        viewModelScope.launch(Dispatchers.IO) {
+            getCartItemsUseCase.getCartItemsUseCase().collectLatest {
+                when(it){
+                    is ResultState.Loading -> {
+                        _getCartItemsState.value = GetCartItemsState(isLoading = true)
+                    }
+                    is ResultState.Success -> {
+                        _getCartItemsState.value = GetCartItemsState(data = it.data)
+                    }
+                    is ResultState.Error -> {
+                        _getCartItemsState.value = GetCartItemsState(error = it.message)
+                    }
+                }
+            }
+        }
+    }
+
+    fun addToCart(cartData: Cart){
+        viewModelScope.launch(Dispatchers.IO) {
+            addToCartUseCase.addToCartUseCase(cartData).collectLatest {
+                when(it){
+                    is ResultState.Loading -> {
+                        _addToCartState.value = AddToCartState(isLoading = true)
+                    }
+                    is ResultState.Success -> {
+                        _addToCartState.value = AddToCartState(data = it.data)
+                        Log.d("TAGCART", "addToCart: ${it.data}")
+
+                    }
+                    is ResultState.Error -> {
+                        _addToCartState.value = AddToCartState(error = it.message)
+                    }
+                }
             }
         }
     }
@@ -400,4 +476,16 @@ data class UpdateShippingAddressState(
     val isLoading: Boolean = false,
     val error: String? = null,
     var data: String? = null
+)
+
+data class AddToCartState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    var data: String? = null
+)
+
+data class GetCartItemsState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val data: List<Cart>? = emptyList()
 )

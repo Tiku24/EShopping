@@ -3,11 +3,13 @@ package com.example.eshopping.data.repoimpl
 import android.util.Log
 import com.example.eshopping.common.ADDRESSES
 import com.example.eshopping.common.CATEGORY
+import com.example.eshopping.common.CART
 import com.example.eshopping.common.PRODUCT
 import com.example.eshopping.common.ResultState
 import com.example.eshopping.common.TOKEN
 import com.example.eshopping.common.USER
 import com.example.eshopping.data.model.Category
+import com.example.eshopping.data.model.Cart
 import com.example.eshopping.data.model.Product
 import com.example.eshopping.data.model.ShippingAddress
 import com.example.eshopping.data.model.UserData
@@ -15,8 +17,6 @@ import com.example.eshopping.domain.repo.Repo
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
-import com.google.firebase.messaging.FirebaseMessagingService
-import com.google.firebase.messaging.RemoteMessage
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -194,6 +194,47 @@ class RepoImpl @Inject constructor(private val firestore: FirebaseFirestore,priv
             }.addOnFailureListener {
                 trySend(ResultState.Error(message = it.message.toString()))
             }
+        awaitClose {
+            close()
+        }
+    }
+
+    override suspend fun addToCart(cartData: Cart): Flow<ResultState<String>> = callbackFlow{
+        trySend(ResultState.Loading)
+        firestore.collection(USER).document(auth.currentUser?.uid.toString()).collection(CART).add(cartData).addOnSuccessListener {
+            trySend(ResultState.Success("Product added to cart successfully"))
+        }.addOnFailureListener {
+            trySend(ResultState.Error(message = it.message.toString()))
+        }
+        awaitClose {
+            close()
+        }
+    }
+
+    override suspend fun getCartItems(): Flow<ResultState<List<Cart>>> = callbackFlow{
+        trySend(ResultState.Loading)
+        firestore.collection(USER).document(auth.currentUser?.uid.toString()).collection(CART).get().addOnSuccessListener {
+            val cart = it.documents.mapNotNull {
+                it.toObject(Cart::class.java)?.apply {
+                    cId = it.id
+                }
+            }
+            trySend(ResultState.Success(cart))
+        }.addOnFailureListener {
+            trySend(ResultState.Error(message = it.message.toString()))
+        }
+        awaitClose {
+            close()
+        }
+    }
+
+    override suspend fun deleteCartItem(cId: String): Flow<ResultState<String>> = callbackFlow{
+        trySend(ResultState.Loading)
+        firestore.collection(USER).document(auth.currentUser?.uid.toString()).collection(CART).document(cId).delete().addOnSuccessListener {
+            trySend(ResultState.Success("Product removed successfully"))
+        }.addOnFailureListener {
+            trySend(ResultState.Error(message = it.message.toString()))
+        }
         awaitClose {
             close()
         }

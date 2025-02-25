@@ -33,7 +33,8 @@ sealed class Routes {
     data class ShippingScreen(
         val name: String,
         val price:String,
-        val image:String
+        val image:String,
+        val quantity:Int
     )
 
     @Serializable

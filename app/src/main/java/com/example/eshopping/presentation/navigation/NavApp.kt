@@ -2,6 +2,8 @@ package com.example.eshopping.presentation.navigation
 
 import android.annotation.SuppressLint
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -43,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -52,6 +55,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.example.eshopping.data.model.Cart
 import com.example.eshopping.data.model.Product
 import com.example.eshopping.presentation.screen.CartScreenUI
 import com.example.eshopping.presentation.screen.HomeScreenUI
@@ -73,10 +77,11 @@ fun NavApp(auth: FirebaseAuth) {
     var shouldShowBottomBar by remember { mutableStateOf(false) }
     val currentDestinationAsState = navController.currentBackStackEntryAsState()
     val currentRoute = currentDestinationAsState.value?.destination?.route
+    val context =LocalContext.current
 
     LaunchedEffect(currentRoute) {
         shouldShowBottomBar = when(currentRoute){
-            Routes.SignUpScreen::class.qualifiedName, Routes.SignInScreen::class.qualifiedName, Routes.ProductDetailScreen::class.qualifiedName , Routes.ProfileScreen::class.qualifiedName-> false
+            Routes.SignUpScreen::class.qualifiedName, Routes.SignInScreen::class.qualifiedName, Routes.ProductDetailScreen::class.qualifiedName, Routes.CartScreen::class.qualifiedName , Routes.ProfileScreen::class.qualifiedName-> false
             else -> true
         }
     }
@@ -86,6 +91,7 @@ fun NavApp(auth: FirebaseAuth) {
     }else{
         SubNavigation.MainHomeScreen
     }
+
 
     val items = listOf(
         NavigationItem(
@@ -120,9 +126,18 @@ fun NavApp(auth: FirebaseAuth) {
                             onClick = {
                                 selectedIndex = index
                                 when (selectedIndex) {
-                                    0 -> navController.navigate(Routes.HomeScreen)
-                                    1 -> navController.navigate(Routes.WishListScreen)
-                                    2 -> navController.navigate(Routes.CartScreen)
+                                    0 -> navController.navigate(Routes.HomeScreen){
+                                        popUpTo(navController.graph.startDestinationId) { inclusive = false }
+                                        launchSingleTop = true
+                                    }
+                                    1 -> navController.navigate(Routes.WishListScreen){
+                                        popUpTo(navController.graph.startDestinationId) { inclusive = false }
+                                        launchSingleTop = true
+                                    }
+                                    2 -> navController.navigate(Routes.CartScreen){
+                                        popUpTo(navController.graph.startDestinationId) { inclusive = false }
+                                        launchSingleTop = true
+                                    }
                                     3 -> navController.navigate(Routes.ProfileScreen)
                                 }
                             },
@@ -166,14 +181,14 @@ fun NavApp(auth: FirebaseAuth) {
                         WishListScreenUI(vm=vm)
                     }
                     composable<Routes.CartScreen> {
-                        CartScreenUI()
+                        CartScreenUI(vm,navController)
                     }
                     composable<Routes.ProfileScreen> {
                         ProfileScreenUI(auth = auth, navController = navController, vm = vm)
                     }
                     composable<Routes.ShippingScreen> {
-                        val data = it.toRoute<Product>()
-                        ShippingScreenUI(name = data.name, image = data.image, price = data.price, vm = vm, auth = auth)
+                        val data = it.toRoute<Cart>()
+                        ShippingScreenUI(name = data.name, image = data.image, price = data.price, vm = vm, auth = auth, quantity = data.quantity, navController = navController)
                     }
                 }
                 composable<Routes.ProductDetailScreen> {

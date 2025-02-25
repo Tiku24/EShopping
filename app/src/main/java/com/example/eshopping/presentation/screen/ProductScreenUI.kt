@@ -38,15 +38,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -54,14 +50,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.eshopping.data.model.Cart
 import com.example.eshopping.presentation.navigation.Routes
 import com.example.eshopping.presentation.viewmodel.GetSpecificProductState
 import com.example.eshopping.presentation.viewmodel.MainViewModel
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import com.example.eshopping.utils.getColorFromName
 
 @Composable
 fun ProductScreenUI(
@@ -103,7 +98,15 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
     val quantity = remember { mutableStateOf(1) }
     var selectedColor =vm.selectedColor.collectAsState()
     val selectedSize = vm.selectedSize.collectAsState()
+    val checkoutState = vm.addToCartState.collectAsState()
+    val context = LocalContext.current
 
+    when{
+        checkoutState.value.data != null-> {
+            Toast.makeText(context, checkoutState.value.data, Toast.LENGTH_SHORT).show()
+            checkoutState.value.data=null
+        }
+    }
 
     Log.d("QAU", "${quantity.value}")
     Column(
@@ -296,21 +299,6 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
 
-                val colorMap = mapOf(
-                    "red" to Color.Red,
-                    "blue" to Color.Blue,
-                    "black" to Color.Black,
-                    "white" to Color.White,
-                    "green" to Color.Green,
-                    "yellow" to Color.Yellow,
-                    "gray" to Color.Gray,
-                    "cyan" to Color.Cyan
-                )
-                fun getColorFromName(colorName: String): Color {
-                    return colorMap[colorName] ?: Color.Gray // Default to Gray if not found
-                }
-                val context =LocalContext.current
-
                 color?.forEach { clr ->
                     Box(
                         modifier = Modifier
@@ -359,7 +347,7 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
             Button(
                 onClick = {
-                    navController.navigate(Routes.ShippingScreen(name = data!!.name, image = data.image, price = data.finalPrice))
+                    navController.navigate(Routes.ShippingScreen(name = data!!.name, image = data.image, price = data.finalPrice, quantity = quantity.value))
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(232, 144, 142))
@@ -370,7 +358,18 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
             Spacer(modifier = Modifier.height(8.dp))
 
             Button(
-                onClick = { /* Add to cart action */ },
+                onClick = {
+                    vm.addToCart(Cart(
+                    name = data!!.name,
+                    image = data.image,
+                    price = data.price,
+                    finalPrice = data.finalPrice,
+                    sizes = selectedSize.value,
+                    colors = selectedColor.value,
+                    quantity = quantity.value,
+                    description = data.description,
+                    category = data.category,
+                )) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
             ) {

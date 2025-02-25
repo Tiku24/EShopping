@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,7 +26,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -51,19 +49,25 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.eshopping.MainActivity
+import com.example.eshopping.data.model.Cart
 import com.example.eshopping.data.model.ShippingAddress
+import com.example.eshopping.presentation.navigation.Routes
 import com.example.eshopping.presentation.viewmodel.MainViewModel
+import com.example.eshopping.utils.getColorFromName
 import com.google.firebase.auth.FirebaseAuth
 
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun ShippingScreenUI(image: String, name: String, price: String,vm: MainViewModel,auth: FirebaseAuth) {
+fun ShippingScreenUI(image: String, name: String, price: String, quantity: Int,vm: MainViewModel,auth: FirebaseAuth,navController: NavController) {
     val scrollState = rememberScrollState()
     val context= LocalContext.current
     val activity = context as? MainActivity
-
+    val numericPrice = price.filter { it.isDigit() }.toIntOrNull() ?: 0
+    vm.totalAmount.value = numericPrice * quantity
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -80,20 +84,10 @@ fun ShippingScreenUI(image: String, name: String, price: String,vm: MainViewMode
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Product Details
-                ProductDetails(name,vm,image)
+                ProductDetails(name,vm,image,navController)
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Order Summary
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-                SummaryRow(label = "Sub Total", amount = "Rs: $price")
-                SummaryRow(label = "Shipping", amount = "Free")
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-
-                SummaryRow(label = "Total", amount = "Rs: $price", isBold = true)
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color.Black)
                 Spacer(modifier = Modifier.height(16.dp))
 //                // Contact Information
 //                ContactInformation()
@@ -116,7 +110,7 @@ fun ShippingScreenUI(image: String, name: String, price: String,vm: MainViewMode
                 Button(
                     onClick = { activity?.startPayment(
                         name = name,
-                        amount = price
+                        amount = vm.totalAmount.value
                     ) },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(232, 144, 142))
@@ -128,59 +122,21 @@ fun ShippingScreenUI(image: String, name: String, price: String,vm: MainViewMode
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun ProductDetails(name: String,vm: MainViewModel,image: String) {
-    Column {
-        val selectedSize by vm.selectedSize.collectAsState()
-        val selectedColor by vm.selectedColor.collectAsState()
-
-        Row(verticalAlignment = Alignment.Top) {
-            AsyncImage(model = image,contentDescription = null, modifier = Modifier
-                .size(width = 62.dp, height = 80.dp)
-                .clip(
-                    RoundedCornerShape(13.dp)
-                ))
-            Spacer(modifier = Modifier.width(10.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = name,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = selectedSize,
-                        fontSize = 15.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    val colorMap = mapOf(
-                        "red" to Color.Red,
-                        "blue" to Color.Blue,
-                        "black" to Color.Black,
-                        "white" to Color.White,
-                        "green" to Color.Green,
-                        "yellow" to Color.Yellow,
-                        "gray" to Color.Gray,
-                        "cyan" to Color.Cyan
-                    )
-                    fun getColorFromName(colorName: String): Color {
-                        return colorMap[colorName] ?: Color.Gray // Default to Gray if not found
-                    }
-                    Box(
-                        modifier = Modifier
-                            .size(16.dp)
-                            .background(getColorFromName(selectedColor), shape = CircleShape)
-                            .border(
-                                width = 1.dp,
-                                color = Color.Black,
-                                CircleShape
-                            )
-                    )
-                }
-            }
+fun ProductDetails(
+    name: String,
+    vm: MainViewModel,
+    image: String,
+    navController: NavController
+) {
+    TrackCurrentRoute(navController)
+    val previousRoute = navController.previousBackStackEntry?.destination?.route
+    when(previousRoute) {
+        Routes.CartScreen::class.qualifiedName -> {
+            SelectListOfProduct(vm)
         }
-
+        else -> {
+            SelectProduct(name,image,vm)
+        }
     }
 }
 
@@ -542,5 +498,145 @@ fun RoundCheckbox(checked: Boolean, onCheckedChange: () -> Unit) {
             ),
             modifier = Modifier.size(15.dp) // Reduce the size of the default checkbox
         )
+    }
+}
+
+
+@Composable
+fun TrackCurrentRoute(navController: NavController) {
+    val previousRoute = navController.previousBackStackEntry?.destination?.route
+
+    LaunchedEffect(previousRoute) {
+        Log.d("NavigationTracker", "Current Route: $previousRoute")
+    }
+}
+
+@SuppressLint("StateFlowValueCalledInComposition")
+@Composable
+fun SelectProduct(name: String, image: String, vm: MainViewModel) {
+    Column {
+        val selectedSize by vm.selectedSize.collectAsState()
+        val selectedColor by vm.selectedColor.collectAsState()
+        val totalPrice = vm.totalAmount.value
+        Row(verticalAlignment = Alignment.Top) {
+            AsyncImage(
+                model = image, contentDescription = null, modifier = Modifier
+                    .size(width = 62.dp, height = 80.dp)
+                    .clip(
+                        RoundedCornerShape(13.dp)
+                    )
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = name,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = selectedSize,
+                        fontSize = 15.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(16.dp)
+                            .background(
+                                getColorFromName(selectedColor),
+                                shape = CircleShape
+                            )
+                            .border(
+                                width = 1.dp,
+                                color = Color.Black,
+                                CircleShape
+                            )
+                    )
+                }
+            }
+        }
+        // Order Summary
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+        SummaryRow(label = "Sub Total", amount = "Rs: $totalPrice")
+        SummaryRow(label = "Shipping", amount = "Free")
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+
+        SummaryRow(label = "Total", amount = "Rs: $totalPrice", isBold = true)
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color.Black)
+    }
+}
+
+@SuppressLint("StateFlowValueCalledInComposition")
+@Composable
+fun SelectListOfProduct(vm: MainViewModel) {
+    val cartState by vm.getCartItemsState.collectAsState()
+    vm.totalAmount.value = cartState.data?.sumOf { it.finalPrice.toInt() * it.quantity } ?: 0
+    Column {
+        cartState.data?.forEach { data ->
+            CartProduct(data)
+        }
+
+        // Order Summary
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+        SummaryRow(label = "Sub Total", amount = "Rs: ${vm.totalAmount.value}")
+        SummaryRow(label = "Shipping", amount = "Free")
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+
+        SummaryRow(label = "Total", amount = "Rs: ${vm.totalAmount.value}", isBold = true)
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color.Black)
+    }
+
+}
+
+@Composable
+fun CartProduct(cartData: Cart) {
+    Column(Modifier.padding(vertical = 10.dp)) {
+        Row(verticalAlignment = Alignment.Top) {
+            AsyncImage(
+                model = cartData.image, contentDescription = null, modifier = Modifier
+                    .size(width = 62.dp, height = 80.dp)
+                    .clip(
+                        RoundedCornerShape(13.dp)
+                    )
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = cartData.name,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = cartData.colors,
+                        fontSize = 15.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(16.dp)
+                            .background(
+                                getColorFromName(cartData.colors),
+                                shape = CircleShape
+                            )
+                            .border(
+                                width = 1.dp,
+                                color = Color.Black,
+                                CircleShape
+                            )
+                    )
+                }
+            }
+        }
     }
 }
