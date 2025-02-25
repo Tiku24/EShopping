@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -53,7 +54,7 @@ class MainViewModel @Inject constructor(
     private val deleteCartItemUseCase: DeleteCartItemUseCase
 ) :ViewModel() {
     private val _getProductCategoryState = MutableStateFlow(GetProductCategoryState())
-    val getProductCategoryState = _getProductCategoryState.asStateFlow()
+    val getProductCategoryState: StateFlow<GetProductCategoryState> = _getProductCategoryState
 
     private val _registerUserWithEmailPassState = MutableStateFlow(RegisterUserWithEmailPassState())
     val registerUserWithEmailPassState = _registerUserWithEmailPassState.asStateFlow()
@@ -93,6 +94,12 @@ class MainViewModel @Inject constructor(
 
     private val _deleteCartItemState = MutableStateFlow(AddToCartState())
     val deleteCartItemState = _deleteCartItemState.asStateFlow()
+
+    private val _selectedCategory = MutableStateFlow<String?>(null)
+    val selectedCategory: StateFlow<String?> = _selectedCategory
+
+    private var allProducts: List<Product> = emptyList()
+
 
     var totalAmount = MutableStateFlow(0)
 
@@ -138,8 +145,15 @@ class MainViewModel @Inject constructor(
                     if (it.isNotEmpty()){
                         searchProduct(it)
                     }
-            }
+                }
         }
+    }
+
+    fun selectCategory(category: String){
+        _selectedCategory.value = category
+        _getProductCategoryState.value = _getProductCategoryState.value.copy(
+            productData = _getProductCategoryState.value.productData?.filter { it.category == category }
+        )
     }
 
     fun deleteCartItem(cId: String){
@@ -369,7 +383,7 @@ class MainViewModel @Inject constructor(
     }
 
 
-     fun loadProductCategory(){
+    fun loadProductCategory(){
         viewModelScope.launch {
             combine(getCategoryUseCase.getCategoryUseCase(),getProductUseCase.getProductUseCase()){ category,product->
                 when {

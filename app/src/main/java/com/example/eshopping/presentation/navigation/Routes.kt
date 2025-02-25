@@ -39,4 +39,7 @@ sealed class Routes {
 
     @Serializable
     data class ProductDetailScreen(val pId:String)
+
+    @Serializable
+    object CategoryWiseProductScreen
 }

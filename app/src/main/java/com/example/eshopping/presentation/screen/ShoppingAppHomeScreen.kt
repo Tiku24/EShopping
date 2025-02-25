@@ -2,8 +2,10 @@ package com.example.eshopping.presentation.screen
 
 import android.annotation.SuppressLint
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,6 +41,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -94,7 +97,7 @@ fun ShoppingAppHomeScreen(modifier: Modifier, categoryProductState: GetProductCa
             }
         }
         else {
-            CategorySection(categoryProductState)
+            CategorySection(categoryProductState,vm,navController)
             ProductGrid(categoryProductState, navController,vm)
         }
     }
@@ -106,7 +109,9 @@ fun SearchBarNotification(query: MutableState<String>, searchState: State<Search
 
     when{
         searchState.value.isLoading -> {
-            CircularProgressIndicator(modifier = Modifier.fillMaxSize().wrapContentSize())
+            CircularProgressIndicator(modifier = Modifier
+                .fillMaxSize()
+                .wrapContentSize())
         }
         searchState.value.success != null -> {
             Log.d("SearchBar", searchState.value.success.toString())
@@ -127,7 +132,11 @@ fun SearchBarNotification(query: MutableState<String>, searchState: State<Search
                 .weight(1f)
                 .height(50.dp)
                 .padding(horizontal = 5.dp)
-                .border(width = 1.dp, color = Color(232, 144, 142), shape = RoundedCornerShape(15.dp))
+                .border(
+                    width = 1.dp,
+                    color = Color(232, 144, 142),
+                    shape = RoundedCornerShape(15.dp)
+                )
         )
         Icon(imageVector = Icons.Outlined.Notifications, tint = Color.Black,contentDescription = "notification icon",modifier = Modifier.size(32.dp))
     }
@@ -135,7 +144,8 @@ fun SearchBarNotification(query: MutableState<String>, searchState: State<Search
 }
 
 @Composable
-fun CategorySection(categoryProductState: GetProductCategoryState) {
+fun CategorySection(categoryProductState: GetProductCategoryState,vm: MainViewModel,navController: NavController) {
+    val context = LocalContext.current
     Column {
         Text(
             text = "Categories",
@@ -152,26 +162,26 @@ fun CategorySection(categoryProductState: GetProductCategoryState) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(categoryProductState.categoryData ?: emptyList()){
-                CategoryChip(it)
+                CategoryChip(it, onClick = {vm.selectCategory(it.name)
+                navController.navigate(Routes.CategoryWiseProductScreen)
+                })
             }
         }
     }
 }
 
 @Composable
-fun CategoryChip(category: Category) {
-//    Button(
-//        onClick = {},
-//        shape = RoundedCornerShape(30),
-//        colors = ButtonDefaults.buttonColors(containerColor = Color(232,144,142))
-//    ) {
-//        Text(text = category.name, color = Color.White)
-//    }
+fun CategoryChip(category: Category,onClick: () -> Unit) {
     Column(modifier = Modifier.padding(horizontal =12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Box(modifier = Modifier
             .size(70.dp)
             .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-            .background(Color.White), contentAlignment = Alignment.Center) {
+            .background(Color.White)
+            .clickable {
+                onClick()
+            },
+            contentAlignment = Alignment.Center
+        ) {
             AsyncImage(model = category.imageUrl, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(45.dp))
         }
         Spacer(Modifier.height(5.dp))
@@ -182,7 +192,6 @@ fun CategoryChip(category: Category) {
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun ProductGrid(categoryProductState: GetProductCategoryState,navController: NavController,vm:MainViewModel) {
-    val context = LocalContext.current
     Row(modifier = Modifier
         .fillMaxWidth()
         .padding(vertical = 20.dp), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -195,8 +204,10 @@ fun ProductGrid(categoryProductState: GetProductCategoryState,navController: Nav
             fontSize = 16.sp,
             fontWeight = FontWeight.Normal,
             fontFamily = MontserratMedium,
-            color = Color(232,144,142)
-        ))
+            color = Color(232,144,142)),
+            modifier = Modifier.clickable {
+                navController.navigate(Routes.CategoryWiseProductScreen)
+            })
     }
     LazyRow {
         items(categoryProductState.productData ?: emptyList()){

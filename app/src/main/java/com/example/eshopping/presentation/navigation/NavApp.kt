@@ -58,6 +58,7 @@ import androidx.navigation.toRoute
 import com.example.eshopping.data.model.Cart
 import com.example.eshopping.data.model.Product
 import com.example.eshopping.presentation.screen.CartScreenUI
+import com.example.eshopping.presentation.screen.CategoryWiseProductScreenUI
 import com.example.eshopping.presentation.screen.HomeScreenUI
 import com.example.eshopping.presentation.screen.ProductScreenUI
 import com.example.eshopping.presentation.screen.ProfileScreenUI
@@ -194,6 +195,9 @@ fun NavApp(auth: FirebaseAuth) {
                 composable<Routes.ProductDetailScreen> {
                     val data = it.toRoute<Product>()
                     ProductScreenUI(id = data.pId, navController = navController, vm = vm)
+                }
+                composable<Routes.CategoryWiseProductScreen> {
+                    CategoryWiseProductScreenUI(vm,navController)
                 }
             }
         }
