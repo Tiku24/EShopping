@@ -17,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.eshopping.data.SupabaseClient.supabaseClient
+import com.example.eshopping.data.model.UserData
 import com.example.eshopping.presentation.navigation.NavApp
 import com.example.eshopping.presentation.screen.HomeScreenUI
 import com.example.eshopping.presentation.screen.SignInScreenUI
@@ -28,6 +30,9 @@ import com.razorpay.PaymentData
 import com.razorpay.PaymentResultListener
 import com.razorpay.PaymentResultWithDataListener
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.jan.supabase.annotations.SupabaseExperimental
+import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.realtime.selectAsFlow
 import org.json.JSONObject
 import javax.inject.Inject
 
@@ -62,13 +67,13 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
                  put("name", name)
                  put("description", "Test Payment")
                  put("currency", "INR")
-                 put("amount", amount) // Amount in paise (50000 = ₹500)
+                 put("amount", amount*100) // Amount in paise (50000 = ₹500)
                  put("prefill", JSONObject().apply {
                      put("email", "test@example.com")
                      put("contact", "9999999999")
                  })
              }
-             checkout.open(this, options)
+             checkout.open(this@MainActivity, options)
          } catch (e: Exception) {
              e.printStackTrace()
          }

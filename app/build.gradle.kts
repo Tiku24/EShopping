@@ -41,6 +41,12 @@ android {
     buildFeatures {
         compose = true
     }
+
+    packaging {
+        resources {
+            pickFirsts.add("META-INF/DEPENDENCIES")
+        }
+    }
 }
 
 dependencies {
@@ -73,4 +79,12 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.5")
     implementation("androidx.compose.material:material-icons-extended:1.7.6")
     implementation ("com.razorpay:checkout:1.6.41")
+
+
+    implementation(platform(libs.supabase.bom))
+    implementation(libs.realtime.kt)
+    implementation(libs.postgrest.kt)
+    implementation(libs.ktor.client.android)
+    implementation("io.github.jan-tennert.supabase:storage-kt:1.3.2")
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.16.0")
 }

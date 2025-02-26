@@ -1,16 +1,16 @@
 package com.example.eshopping.presentation.screen
 
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,7 +30,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,13 +47,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.eshopping.R
+import com.example.eshopping.common.IMAGES
 import com.example.eshopping.presentation.navigation.Routes
 import com.example.eshopping.presentation.viewmodel.MainViewModel
+import com.example.eshopping.utils.uriToByteArray
 import com.google.firebase.auth.FirebaseAuth
 
 
@@ -64,11 +64,20 @@ fun ProfileScreenUI(
     vm:MainViewModel,
     navController: NavController
 ) {
-
-    LaunchedEffect(Unit) {
-        vm.getUserById(auth.currentUser?.uid.toString())
+    var imageUri by remember {
+        mutableStateOf<Uri?>(null)
+    }
+    var imageUrl by remember { mutableStateOf("") }
+    val pickMedia = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            Log.d("PhotoPicker", "Selected URI: $uri")
+            imageUri = uri
+        } else {
+            Log.d("PhotoPicker", "No media selected")
+        }
     }
 
+    val date = System.currentTimeMillis()
     var isEdit by remember { mutableStateOf(true) }
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
@@ -80,6 +89,9 @@ fun ProfileScreenUI(
     val updateState = vm.updateUserDataState.collectAsStateWithLifecycle()
     val userState = vm.getUserByIdState.collectAsStateWithLifecycle()
     Log.d("UserTAG", "ProfileScreenUI: $userState")
+    LaunchedEffect(updateState.value.success) {
+        vm.getUserById(auth.currentUser?.uid.toString())
+    }
 
     LaunchedEffect(userState.value.success) {
         userState.value.success.let {
@@ -88,18 +100,22 @@ fun ProfileScreenUI(
             email = it?.email.toString()
             address = it?.address.toString()
             phoneNumber = it?.phoneNumber.toString()
+            imageUrl = it?.image.toString()
         }
     }
 
     when{
         updateState.value.success != null -> {
             Toast.makeText(context, updateState.value.success, Toast.LENGTH_SHORT).show()
+            updateState.value.success = null
         }
     }
 
     when {
         userState.value.isLoading -> {
-            CircularProgressIndicator(modifier = Modifier.fillMaxSize().wrapContentSize())
+            CircularProgressIndicator(modifier = Modifier
+                .fillMaxSize()
+                .wrapContentSize())
         }
 
         userState.value.error != null -> {
@@ -135,17 +151,25 @@ fun ProfileScreenUI(
                 ) {
                     // Profile Picture with Edit Icon
                     Box(contentAlignment = Alignment.BottomEnd) {
-                        Image(
-                            painter = painterResource(R.drawable.frock), // Replace with your profile image resource
-                            contentDescription = "Profile Picture",
+                        if (imageUrl.isNotEmpty()){
+                        AsyncImage(model = imageUrl,
+                            contentDescription = null,
                             contentScale = ContentScale.FillBounds,
-                            modifier = Modifier
-                                .size(120.dp)
-                                .clip(CircleShape)
+                            modifier = Modifier.size(120.dp).clip(CircleShape)
                                 .border(2.dp, Color.Gray, CircleShape)
                         )
+                        }else{
+                            Image(painter = painterResource(id = R.drawable.profile),
+                                contentDescription = null,
+                                contentScale = ContentScale.FillBounds,
+                                modifier = Modifier.size(120.dp).clip(CircleShape)
+                                    .border(2.dp, Color.Gray, CircleShape))
+                        }
                         IconButton(
-                            onClick = { /* Handle edit picture */ },
+                            onClick = {
+                                pickMedia.launch("image/*")
+                            },
+                            enabled = !isEdit,
                             modifier = Modifier
                                 .size(32.dp)
                                 .background(Color.White, shape = CircleShape)
@@ -219,10 +243,33 @@ fun ProfileScreenUI(
                             if (email != userState.value.success?.email) updatedFields["email"] = email
                             if (address != userState.value.success?.address) updatedFields["address"] = address
                             if (phoneNumber != userState.value.success?.phoneNumber) updatedFields["phoneNumber"] = phoneNumber
+                            if (!isEdit) {
+                                val imageByteArray = imageUri?.uriToByteArray(context)
 
-                            if(updatedFields.isNotEmpty()) {
-                                vm.updateUser(updatedFields)
+                                if (imageByteArray != null) {
+                                    // Step 1: Upload Image First
+                                    vm.uploadImage("$date", imageByteArray)
+                                        // Step 2: After Upload, Get the New Image URL
+                                        vm.getImages(bucketName = IMAGES, fileName = "$date") { newImageUrl ->
+                                            if (!newImageUrl.isNullOrEmpty()) {
+                                                imageUrl = newImageUrl
+                                                updatedFields["image"] = newImageUrl
+                                                Log.d("TAGIMG", "New Image URL: $newImageUrl")
+
+                                                // Step 3: Update User Profile with the New Image URL
+                                                if (updatedFields.isNotEmpty()) {
+                                                    vm.updateUser(updatedFields)
+                                                }
+                                            }
+                                    }
+                                } else {
+                                    // If no new image, just update other profile fields
+                                    if (updatedFields.isNotEmpty()) {
+                                        vm.updateUser(updatedFields)
+                                    }
+                                }
                             }
+
                             isEdit = !isEdit
                         },
                         modifier = Modifier

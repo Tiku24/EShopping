@@ -3,7 +3,9 @@ package com.example.eshopping.presentation.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.eshopping.common.IMAGES
 import com.example.eshopping.common.ResultState
+import com.example.eshopping.data.SupabaseClient.supabaseClient
 import com.example.eshopping.data.model.Category
 import com.example.eshopping.data.model.Cart
 import com.example.eshopping.data.model.Product
@@ -24,6 +26,7 @@ import com.example.eshopping.domain.usecase.SignInUserWithEmailPassUseCase
 import com.example.eshopping.domain.usecase.UpdateShippingAddressUseCase
 import com.example.eshopping.domain.usecase.UpdateUserDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -97,6 +100,9 @@ class MainViewModel @Inject constructor(
 
     private val _selectedCategory = MutableStateFlow<String?>(null)
     val selectedCategory: StateFlow<String?> = _selectedCategory
+
+    private val _uploadGetImageState = MutableStateFlow(UploadGetImageState())
+    val uploadImageState = _uploadGetImageState.asStateFlow()
 
     private var allProducts: List<Product> = emptyList()
 
@@ -305,6 +311,33 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun uploadImage(fileName:String,byteArray: ByteArray){
+        viewModelScope.launch {
+            try {
+                _uploadGetImageState.value = UploadGetImageState(isLoading = true)
+                val bucket = supabaseClient.storage[IMAGES]
+                bucket.upload("$fileName.png",byteArray,true)
+                _uploadGetImageState.value = UploadGetImageState(data = "Image Uploaded Successfully")
+            }catch (e:Exception){
+                _uploadGetImageState.value = UploadGetImageState(error = e.message.toString())
+            }
+        }
+    }
+
+    fun getImages(bucketName: String,fileName: String, onImageUrlRetrieved: (url:String) -> Unit){
+        viewModelScope.launch {
+            try {
+                _uploadGetImageState.value= UploadGetImageState(isLoading = true)
+                val bucket = supabaseClient.storage[bucketName]
+                val url = bucket.publicUrl("$fileName.png")
+                onImageUrlRetrieved(url)
+                _uploadGetImageState.value= UploadGetImageState(data = url)
+            }catch (e:Exception){
+                _uploadGetImageState.value= UploadGetImageState(error = e.message.toString())
+            }
+        }
+    }
+
 
     fun getUserById(uid: String){
         viewModelScope.launch(Dispatchers.IO) {
@@ -465,7 +498,7 @@ data class GetUserByIdState(
 data class UpdateUserDataState(
     val isLoading:Boolean = false,
     val error: String? = null,
-    val success: String? = null
+    var success: String? = null
 )
 
 data class SearchProductState(
@@ -502,4 +535,10 @@ data class GetCartItemsState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val data: List<Cart>? = emptyList()
+)
+
+data class UploadGetImageState(
+    val isLoading:Boolean = false,
+    val error:String = "",
+    val data: String = ""
 )
