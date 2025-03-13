@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.Icon
@@ -24,17 +23,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.eshopping.data.model.Product
 import com.example.eshopping.presentation.navigation.Routes
 import com.example.eshopping.presentation.viewmodel.MainViewModel
+import com.example.eshopping.ui.theme.AppTheme
 
 @Composable
 fun ItemRow(productData: Product,onClick: () -> Unit) {
@@ -52,12 +49,12 @@ fun ItemRow(productData: Product,onClick: () -> Unit) {
                     .width(120.dp)
                     .height(140.dp)
                     .padding(end = 8.dp)
-                    .clip(RoundedCornerShape(15.dp))
+                    .clip(AppTheme.shape.container)
                 )
             Column(modifier = Modifier.fillMaxWidth()) {
-                Text(text = productData.name, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                Text(text = productData.price, fontSize = 14.sp, textDecoration = TextDecoration.LineThrough)
-                Text(text = productData.finalPrice, color = Color(232,144,142))
+                Text(text = productData.name, style = AppTheme.typography.labelLarge, color = AppTheme.colorScheme.primary)
+                Text(text = productData.price, style = AppTheme.typography.labelNormal, color = AppTheme.colorScheme.primary, textDecoration = TextDecoration.LineThrough)
+                Text(text = productData.finalPrice, style = AppTheme.typography.labelNormal, color = AppTheme.colorScheme.priceColor)
             }
         }
     }
@@ -74,12 +71,12 @@ fun CategoryWiseProductScreenUI(vm: MainViewModel,navController: NavController) 
             navController.navigateUp()
         },
             verticalAlignment = Alignment.CenterVertically) {
-            Icon(imageVector = Icons.Filled.ArrowBackIosNew, contentDescription = "", tint = Color.Black, modifier = Modifier.size(16.dp))
+            Icon(imageVector = Icons.Filled.ArrowBackIosNew, contentDescription = null, tint = AppTheme.colorScheme.primary, modifier = Modifier.size(15.dp))
             Spacer(modifier = Modifier.width(5.dp))
-            Text("See Your Favourite", fontSize = 15.sp, color = Color.Black)
+            Text("See Your Favourite", style = AppTheme.typography.labelNormal, color = AppTheme.colorScheme.primary)
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Items", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        Text(text = "Items", style = AppTheme.typography.labelLarge, color = AppTheme.colorScheme.primary)
         Spacer(modifier = Modifier.height(8.dp))
         LazyColumn {
             items(categoryProductState.productData ?: emptyList()) { item ->

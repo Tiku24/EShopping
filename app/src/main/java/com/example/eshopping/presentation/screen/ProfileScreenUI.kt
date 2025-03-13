@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
@@ -28,10 +27,14 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -54,6 +57,7 @@ import com.example.eshopping.R
 import com.example.eshopping.common.IMAGES
 import com.example.eshopping.presentation.navigation.Routes
 import com.example.eshopping.presentation.viewmodel.MainViewModel
+import com.example.eshopping.ui.theme.AppTheme
 import com.example.eshopping.utils.uriToByteArray
 import com.google.firebase.auth.FirebaseAuth
 
@@ -115,7 +119,7 @@ fun ProfileScreenUI(
         userState.value.isLoading -> {
             CircularProgressIndicator(modifier = Modifier
                 .fillMaxSize()
-                .wrapContentSize())
+                .wrapContentSize(),color = AppTheme.colorScheme.primary)
         }
 
         userState.value.error != null -> {
@@ -127,19 +131,24 @@ fun ProfileScreenUI(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White)
+                    .background(AppTheme.colorScheme.onPrimary)
             ) {
                 // Top Bar
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(232, 144, 142))
+                        .background(AppTheme.colorScheme.primary)
                         .padding(vertical = 30.dp, horizontal = 16.dp),
                     contentAlignment = Alignment.TopStart
                 ) {
                         IconButton(onClick = {
                             navController.popBackStack()
-                        }){ Icon(imageVector = Icons.Filled.ArrowBackIosNew,contentDescription = null, tint = Color.White) }
+                        },
+                            colors = IconButtonColors(
+                                contentColor = AppTheme.colorScheme.primary,
+                                containerColor = AppTheme.colorScheme.onPrimary,
+                                disabledContainerColor = AppTheme.colorScheme.primary,
+                                disabledContentColor = AppTheme.colorScheme.primary)){ Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack,contentDescription = null, tint = AppTheme.colorScheme.primary) }
                 }
 
                 Column(
@@ -276,9 +285,9 @@ fun ProfileScreenUI(
                             .fillMaxWidth()
                             .height(60.dp)
                             .padding(bottom = 16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(232, 144, 142))
+                        colors = ButtonDefaults.buttonColors(containerColor = AppTheme.colorScheme.primary, contentColor = AppTheme.colorScheme.onPrimary)
                     ) {
-                        Text(if (isEdit) "Edit" else "Save changes", color = Color.White)
+                        Text(if (isEdit) "Edit" else "Save changes",style = AppTheme.typography.labelNormal)
                     }
 
                     Button(onClick = {
@@ -289,8 +298,8 @@ fun ProfileScreenUI(
                             .fillMaxWidth()
                             .height(60.dp)
                             .padding(bottom = 16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(232, 144, 142))) {
-                        Text(text = "Sign Out")
+                        colors = ButtonDefaults.buttonColors(containerColor = AppTheme.colorScheme.primary, contentColor = AppTheme.colorScheme.onPrimary)) {
+                        Text(text = "Sign Out", style = AppTheme.typography.labelNormal)
                     }
                 }
             }
@@ -298,14 +307,69 @@ fun ProfileScreenUI(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InputField(label: String, value: String, icon: ImageVector,onValueChange: (String) -> Unit,isEditable:Boolean) {
     OutlinedTextField(
         value = value,
+        textStyle = AppTheme.typography.labelLarge,
         onValueChange = {onValueChange(it)},
-        label = { Text(label) },
+        label = { Text(label,style = AppTheme.typography.labelNormal) },
         readOnly = isEditable,
         leadingIcon = { Icon(imageVector = icon, contentDescription = null) },
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = OutlinedTextFieldTokens.FocusInputColor.value,
+            unfocusedTextColor = OutlinedTextFieldTokens.InputColor.value,
+            disabledTextColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+            errorTextColor = OutlinedTextFieldTokens.ErrorInputColor.value,
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            disabledContainerColor = Color.Transparent,
+            errorContainerColor = Color.Transparent,
+            cursorColor = Color.Gray,             // Cursor color
+            errorCursorColor = OutlinedTextFieldTokens.ErrorFocusCaretColor.value,
+            selectionColors = LocalTextSelectionColors.current,
+            focusedBorderColor = AppTheme.colorScheme.primary,      // Border color when focused
+            unfocusedBorderColor = AppTheme.colorScheme.primary,    // Border color when not focused
+            disabledBorderColor = Color.LightGray,// Border color when disabled
+            errorBorderColor = Color.Red,         // Border color in error state
+            focusedLeadingIconColor = OutlinedTextFieldTokens.FocusLeadingIconColor.value,
+            unfocusedLeadingIconColor = OutlinedTextFieldTokens.LeadingIconColor.value,
+            disabledLeadingIconColor = OutlinedTextFieldTokens.DisabledLeadingIconColor.value
+                .copy(alpha = OutlinedTextFieldTokens.DisabledLeadingIconOpacity),
+            errorLeadingIconColor = OutlinedTextFieldTokens.ErrorLeadingIconColor.value,
+            focusedTrailingIconColor = OutlinedTextFieldTokens.FocusTrailingIconColor.value,
+            unfocusedTrailingIconColor = OutlinedTextFieldTokens.TrailingIconColor.value,
+            disabledTrailingIconColor = OutlinedTextFieldTokens.DisabledTrailingIconColor
+                .value.copy(alpha = OutlinedTextFieldTokens.DisabledTrailingIconOpacity),
+            errorTrailingIconColor = OutlinedTextFieldTokens.ErrorTrailingIconColor.value,
+            focusedLabelColor = AppTheme.colorScheme.primary,       // Label color when focused
+            unfocusedLabelColor = Color.Black,     // Label color when not focused
+            disabledLabelColor = OutlinedTextFieldTokens.DisabledLabelColor.value
+                .copy(alpha = OutlinedTextFieldTokens.DisabledLabelOpacity),
+            errorLabelColor = OutlinedTextFieldTokens.ErrorLabelColor.value,
+            focusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+            unfocusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+            disabledPlaceholderColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+            errorPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+            focusedSupportingTextColor = OutlinedTextFieldTokens.FocusSupportingColor.value,
+            unfocusedSupportingTextColor = OutlinedTextFieldTokens.SupportingColor.value,
+            disabledSupportingTextColor = OutlinedTextFieldTokens.DisabledSupportingColor
+                .value.copy(alpha = OutlinedTextFieldTokens.DisabledSupportingOpacity),
+            errorSupportingTextColor = OutlinedTextFieldTokens.ErrorSupportingColor.value,
+            focusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+            unfocusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+            disabledPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value
+                .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+            errorPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+            focusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+            unfocusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+            disabledSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value
+                .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+            errorSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+        )
     )
 }

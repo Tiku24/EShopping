@@ -2,7 +2,6 @@ package com.example.eshopping.presentation.screen
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +23,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -39,12 +39,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.eshopping.R
 import com.example.eshopping.presentation.navigation.Routes
 import com.example.eshopping.presentation.viewmodel.MainViewModel
+import com.example.eshopping.ui.theme.AppTheme
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,7 +57,7 @@ fun SignInScreenUI(modifier: Modifier = Modifier,vm: MainViewModel,navController
             CircularProgressIndicator(
                 modifier
                     .fillMaxSize()
-                    .wrapContentSize())
+                    .wrapContentSize(),color = AppTheme.colorScheme.primary)
         }
         state.success != null -> {
             Toast.makeText(context, state.success, Toast.LENGTH_SHORT).show()
@@ -100,9 +99,8 @@ fun SignInScreenUI(modifier: Modifier = Modifier,vm: MainViewModel,navController
                 )
                 Text(
                     text = "EShopping",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = Color(232,144,142)
+                    style = AppTheme.typography.titleLarge,
+                    color = AppTheme.colorScheme.priceColor
                 )
             }
 
@@ -111,9 +109,8 @@ fun SignInScreenUI(modifier: Modifier = Modifier,vm: MainViewModel,navController
             // Sign In Text
             Text(
                 text = "Sign in",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
+                style = AppTheme.typography.titleNormal,
+                color = AppTheme.colorScheme.primary,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
@@ -124,12 +121,62 @@ fun SignInScreenUI(modifier: Modifier = Modifier,vm: MainViewModel,navController
 
             OutlinedTextField(
                 value = email,
+                textStyle = AppTheme.typography.labelLarge,
                 onValueChange = {email = it},
-                placeholder = { Text(text = "Email", color = Color.Gray) },
-                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = Color.Gray) },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    unfocusedBorderColor = Color.LightGray,
-                    focusedBorderColor = Color(0xFFDA6A2C)
+                placeholder = { Text(text = "Email", color = AppTheme.colorScheme.primary,style = AppTheme.typography.labelNormal) },
+                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = AppTheme.colorScheme.primary) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = OutlinedTextFieldTokens.FocusInputColor.value,
+                    unfocusedTextColor = OutlinedTextFieldTokens.InputColor.value,
+                    disabledTextColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorTextColor = OutlinedTextFieldTokens.ErrorInputColor.value,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    errorContainerColor = Color.Transparent,
+                    cursorColor = Color.Gray,             // Cursor color
+                    errorCursorColor = OutlinedTextFieldTokens.ErrorFocusCaretColor.value,
+                    selectionColors = LocalTextSelectionColors.current,
+                    focusedBorderColor = AppTheme.colorScheme.primary,      // Border color when focused
+                    unfocusedBorderColor = AppTheme.colorScheme.primary,    // Border color when not focused
+                    disabledBorderColor = Color.LightGray,// Border color when disabled
+                    errorBorderColor = Color.Red,         // Border color in error state
+                    focusedLeadingIconColor = OutlinedTextFieldTokens.FocusLeadingIconColor.value,
+                    unfocusedLeadingIconColor = OutlinedTextFieldTokens.LeadingIconColor.value,
+                    disabledLeadingIconColor = OutlinedTextFieldTokens.DisabledLeadingIconColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledLeadingIconOpacity),
+                    errorLeadingIconColor = OutlinedTextFieldTokens.ErrorLeadingIconColor.value,
+                    focusedTrailingIconColor = OutlinedTextFieldTokens.FocusTrailingIconColor.value,
+                    unfocusedTrailingIconColor = OutlinedTextFieldTokens.TrailingIconColor.value,
+                    disabledTrailingIconColor = OutlinedTextFieldTokens.DisabledTrailingIconColor
+                        .value.copy(alpha = OutlinedTextFieldTokens.DisabledTrailingIconOpacity),
+                    errorTrailingIconColor = OutlinedTextFieldTokens.ErrorTrailingIconColor.value,
+                    focusedLabelColor = AppTheme.colorScheme.primary,       // Label color when focused
+                    unfocusedLabelColor = Color.Black,     // Label color when not focused
+                    disabledLabelColor = OutlinedTextFieldTokens.DisabledLabelColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledLabelOpacity),
+                    errorLabelColor = OutlinedTextFieldTokens.ErrorLabelColor.value,
+                    focusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                    unfocusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                    disabledPlaceholderColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                    focusedSupportingTextColor = OutlinedTextFieldTokens.FocusSupportingColor.value,
+                    unfocusedSupportingTextColor = OutlinedTextFieldTokens.SupportingColor.value,
+                    disabledSupportingTextColor = OutlinedTextFieldTokens.DisabledSupportingColor
+                        .value.copy(alpha = OutlinedTextFieldTokens.DisabledSupportingOpacity),
+                    errorSupportingTextColor = OutlinedTextFieldTokens.ErrorSupportingColor.value,
+                    focusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                    unfocusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                    disabledPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                    focusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+                    unfocusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+                    disabledSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -141,12 +188,62 @@ fun SignInScreenUI(modifier: Modifier = Modifier,vm: MainViewModel,navController
 
             OutlinedTextField(
                 value = password,
+                textStyle = AppTheme.typography.labelLarge,
                 onValueChange = {password = it},
-                placeholder = { Text(text = "Password", color = Color.Gray) },
-                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color.Gray) },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    unfocusedBorderColor = Color.LightGray,
-                    focusedBorderColor = Color(232,144,142)
+                placeholder = { Text(text = "Password", color = AppTheme.colorScheme.primary,style = AppTheme.typography.labelNormal) },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = AppTheme.colorScheme.primary) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = OutlinedTextFieldTokens.FocusInputColor.value,
+                    unfocusedTextColor = OutlinedTextFieldTokens.InputColor.value,
+                    disabledTextColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorTextColor = OutlinedTextFieldTokens.ErrorInputColor.value,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    errorContainerColor = Color.Transparent,
+                    cursorColor = Color.Gray,             // Cursor color
+                    errorCursorColor = OutlinedTextFieldTokens.ErrorFocusCaretColor.value,
+                    selectionColors = LocalTextSelectionColors.current,
+                    focusedBorderColor = AppTheme.colorScheme.primary,      // Border color when focused
+                    unfocusedBorderColor = AppTheme.colorScheme.primary,    // Border color when not focused
+                    disabledBorderColor = Color.LightGray,// Border color when disabled
+                    errorBorderColor = Color.Red,         // Border color in error state
+                    focusedLeadingIconColor = OutlinedTextFieldTokens.FocusLeadingIconColor.value,
+                    unfocusedLeadingIconColor = OutlinedTextFieldTokens.LeadingIconColor.value,
+                    disabledLeadingIconColor = OutlinedTextFieldTokens.DisabledLeadingIconColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledLeadingIconOpacity),
+                    errorLeadingIconColor = OutlinedTextFieldTokens.ErrorLeadingIconColor.value,
+                    focusedTrailingIconColor = OutlinedTextFieldTokens.FocusTrailingIconColor.value,
+                    unfocusedTrailingIconColor = OutlinedTextFieldTokens.TrailingIconColor.value,
+                    disabledTrailingIconColor = OutlinedTextFieldTokens.DisabledTrailingIconColor
+                        .value.copy(alpha = OutlinedTextFieldTokens.DisabledTrailingIconOpacity),
+                    errorTrailingIconColor = OutlinedTextFieldTokens.ErrorTrailingIconColor.value,
+                    focusedLabelColor = AppTheme.colorScheme.primary,       // Label color when focused
+                    unfocusedLabelColor = Color.Black,     // Label color when not focused
+                    disabledLabelColor = OutlinedTextFieldTokens.DisabledLabelColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledLabelOpacity),
+                    errorLabelColor = OutlinedTextFieldTokens.ErrorLabelColor.value,
+                    focusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                    unfocusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                    disabledPlaceholderColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                    focusedSupportingTextColor = OutlinedTextFieldTokens.FocusSupportingColor.value,
+                    unfocusedSupportingTextColor = OutlinedTextFieldTokens.SupportingColor.value,
+                    disabledSupportingTextColor = OutlinedTextFieldTokens.DisabledSupportingColor
+                        .value.copy(alpha = OutlinedTextFieldTokens.DisabledSupportingOpacity),
+                    errorSupportingTextColor = OutlinedTextFieldTokens.ErrorSupportingColor.value,
+                    focusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                    unfocusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                    disabledPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                    focusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+                    unfocusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+                    disabledSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -158,11 +255,11 @@ fun SignInScreenUI(modifier: Modifier = Modifier,vm: MainViewModel,navController
             // Forgot Password
             Text(
                 text = "Forgot Password ?",
-                color = Color(232,144,142),
+                color = AppTheme.colorScheme.primary,
                 modifier = Modifier
                     .align(Alignment.Start)
                     .padding(start = 16.dp),
-                fontSize = 14.sp
+                style = AppTheme.typography.labelNormal
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -172,7 +269,7 @@ fun SignInScreenUI(modifier: Modifier = Modifier,vm: MainViewModel,navController
                 onClick = {
                     vm.signInUserWithEmailPass(email,password)
                 },
-                colors = ButtonDefaults.buttonColors(Color(232,144,142)),
+                colors = ButtonDefaults.buttonColors(containerColor = AppTheme.colorScheme.primary, contentColor = AppTheme.colorScheme.onPrimary),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
@@ -180,17 +277,12 @@ fun SignInScreenUI(modifier: Modifier = Modifier,vm: MainViewModel,navController
             ) {
                 Text(
                     text = "Sign In",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    color = AppTheme.colorScheme.onPrimary,
+                    style = AppTheme.typography.labelNormal
                 )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
-
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             // Sign Up Option
             Row(
@@ -199,13 +291,13 @@ fun SignInScreenUI(modifier: Modifier = Modifier,vm: MainViewModel,navController
             ) {
                 Text(
                     text = "Don't have an account? ",
-                    color = Color.Gray,
-                    fontSize = 14.sp
+                    style = AppTheme.typography.labelNormal,
+                    color = AppTheme.colorScheme.primary
                 )
                 Text(
                     text = "Sign up",
-                    color = Color(232,144,142),
-                    fontSize = 14.sp,
+                    color = AppTheme.colorScheme.primary,
+                    style = AppTheme.typography.labelNormal,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.clickable {
                         navController.navigate(Routes.SignUpScreen) // Adjust navigation logic

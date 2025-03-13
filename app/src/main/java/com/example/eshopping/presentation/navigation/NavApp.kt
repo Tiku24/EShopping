@@ -1,54 +1,37 @@
 package com.example.eshopping.presentation.navigation
 
 import android.annotation.SuppressLint
-import android.util.Log
-import android.widget.Toast
-import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.outlined.ExitToApp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.ShoppingCart
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -67,6 +50,7 @@ import com.example.eshopping.presentation.screen.SignInScreenUI
 import com.example.eshopping.presentation.screen.SignUpScreenUI
 import com.example.eshopping.presentation.screen.WishListScreenUI
 import com.example.eshopping.presentation.viewmodel.MainViewModel
+import com.example.eshopping.ui.theme.AppTheme
 import com.google.firebase.auth.FirebaseAuth
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -78,7 +62,6 @@ fun NavApp(auth: FirebaseAuth) {
     var shouldShowBottomBar by remember { mutableStateOf(false) }
     val currentDestinationAsState = navController.currentBackStackEntryAsState()
     val currentRoute = currentDestinationAsState.value?.destination?.route
-    val context =LocalContext.current
 
     LaunchedEffect(currentRoute) {
         shouldShowBottomBar = when(currentRoute){
@@ -118,9 +101,12 @@ fun NavApp(auth: FirebaseAuth) {
     )
 
     Scaffold(
+        modifier = Modifier.fillMaxSize(),
         bottomBar = {
             if (shouldShowBottomBar) {
-                NavigationBar {
+                NavigationBar(
+                    modifier = Modifier.fillMaxWidth().height(90.dp),
+                    containerColor = AppTheme.colorScheme.primary) {
                     items.forEachIndexed { index, navigationItem ->
                         NavigationBarItem(
                             selected = selectedIndex == index,
@@ -155,7 +141,16 @@ fun NavApp(auth: FirebaseAuth) {
                                     )
                                 }
                             },
-                            label = { Text(navigationItem.label) }
+                            label = { Text(navigationItem.label) },
+                            colors = NavigationBarItemColors(
+                                selectedIconColor = AppTheme.colorScheme.primary,
+                                selectedTextColor = AppTheme.colorScheme.onPrimary,
+                                selectedIndicatorColor = AppTheme.colorScheme.onPrimary,
+                                unselectedIconColor = AppTheme.colorScheme.onPrimary,
+                                unselectedTextColor = AppTheme.colorScheme.onPrimary,
+                                disabledIconColor = AppTheme.colorScheme.onPrimary,
+                                disabledTextColor = AppTheme.colorScheme.onPrimary
+                            )
                         )
                     }
                 }

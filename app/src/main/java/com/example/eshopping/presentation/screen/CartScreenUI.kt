@@ -1,7 +1,6 @@
 package com.example.eshopping.presentation.screen
 
 import android.graphics.Color.rgb
-import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -27,13 +26,10 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
@@ -41,22 +37,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.eshopping.data.model.Cart
 import com.example.eshopping.presentation.navigation.Routes
 import com.example.eshopping.presentation.viewmodel.MainViewModel
+import com.example.eshopping.ui.theme.AppTheme
 import com.example.eshopping.utils.getColorFromName
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -83,9 +76,8 @@ fun CartScreenUI(vm:MainViewModel,navController: NavController) {
         // Header
         Text(
             text = "Shopping Cart",
-            color = Color.Black,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
+            color = AppTheme.colorScheme.primary,
+            style = AppTheme.typography.titleLarge,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
@@ -100,31 +92,33 @@ fun CartScreenUI(vm:MainViewModel,navController: NavController) {
                 },
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(imageVector = Icons.Filled.ArrowBackIosNew, contentDescription = null, modifier = Modifier.size(13.dp))
-            Text("Continue Shopping")
+            Icon(imageVector = Icons.Filled.ArrowBackIosNew, contentDescription = null, modifier = Modifier.size(15.dp))
+            Spacer(modifier = Modifier.width(5.dp))
+            Text("Continue Shopping", style = AppTheme.typography.labelNormal, color = AppTheme.colorScheme.primary)
         }
         Spacer(modifier = Modifier.height(15.dp))
 
         Row {
-            Text("Items", color = Color.Black)
+            Text("Items", color = AppTheme.colorScheme.primary, style = AppTheme.typography.labelLarge)
             Spacer(modifier = Modifier.weight(1f))
-            Text("Price",color = Color.Black)
+            Text("Price",color = AppTheme.colorScheme.primary, style = AppTheme.typography.labelLarge)
             Spacer(modifier = Modifier.width(25.dp))
-            Text("QTY",color = Color.Black)
+            Text("QTY",color = AppTheme.colorScheme.primary, style = AppTheme.typography.labelLarge)
             Spacer(modifier = Modifier.width(25.dp))
-            Text("Total",color = Color.Black)
+            Text("Total",color = AppTheme.colorScheme.primary, style = AppTheme.typography.labelLarge)
         }
         Spacer(modifier = Modifier.height(10.dp))
         // Items List
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White)
+                .background(AppTheme.colorScheme.onPrimary)
         ) {
             items(cartItemState.data ?: emptyList(),key = { it.cId }) { item ->
-                SwipeToDismissItem(item, onRemove = {vm.deleteCartItem(item.cId)},modifier = Modifier.animateItemPlacement(
-                    tween(200)
-                ))
+                SwipeToDismissItem(item, onRemove = {vm.deleteCartItem(item.cId)},modifier = Modifier.animateItem(
+                    fadeInSpec = null, fadeOutSpec = null, placementSpec = tween(200)
+                )
+                )
             }
             item {
                 HorizontalDivider()
@@ -135,21 +129,21 @@ fun CartScreenUI(vm:MainViewModel,navController: NavController) {
                         .padding(vertical = 16.dp),
                     horizontalArrangement = Arrangement.End,
                 ) {
-                    Text(text = "Sub Total", fontSize = 15.sp, fontWeight = FontWeight.Bold,color = Color.Black)
+                    Text(text = "Sub Total", style = AppTheme.typography.labelLarge,color = AppTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Rs: $subTotal", fontSize = 15.sp,color = Color.Black)
+                    Text(text = "Rs: $subTotal", style = AppTheme.typography.paragraph)
                 }
 
                 // Checkout Button
                 Button(
                     onClick = { navController.navigate(Routes.ShippingScreen(name = "", image = "", price = "", quantity = 0)) },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(232,144,142)),
+                    colors = ButtonDefaults.buttonColors(containerColor = AppTheme.colorScheme.primary),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 10.dp, bottom = 16.dp)
                 ) {
-                    Text(text = "Checkout", color = Color.White)
+                    Text(text = "Checkout", style = AppTheme.typography.labelNormal, color = AppTheme.colorScheme.onPrimary)
                 }
             }
         }
@@ -172,7 +166,7 @@ fun CartItemRow(cartData: Cart) {
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(80.dp)
-                .clip(RoundedCornerShape(15.dp))
+                .clip(AppTheme.shape.container)
         )
 
         Spacer(modifier = Modifier.width(16.dp))
@@ -181,10 +175,10 @@ fun CartItemRow(cartData: Cart) {
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            Text(text = cartData.name,color = Color.Black, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-            Text(text = "Size: ${cartData.sizes}", fontSize = 10.sp, color = Color.Black)
+            Text(text = cartData.name, style = AppTheme.typography.labelSmall)
+            Text(text = "Size: ${cartData.sizes}", style = AppTheme.typography.cartSubTitle, color = AppTheme.colorScheme.primary)
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Color: ", fontSize = 10.sp, color = Color.Black)
+                Text(text = "Color: ", style = AppTheme.typography.cartSubTitle, color = AppTheme.colorScheme.primary)
                 Box(
                     modifier = Modifier
                         .size(13.dp)
@@ -197,11 +191,11 @@ fun CartItemRow(cartData: Cart) {
         Row(
             horizontalArrangement = Arrangement.End
         ) {
-            Text(text = "Rs:${cartData.price}", color = Color.Black, fontSize = 12.sp)
+            Text(text = "Rs:${cartData.price}", style = AppTheme.typography.labelNormal, color = AppTheme.colorScheme.primary)
             Spacer(modifier = Modifier.width(25.dp))
-            Text(text = "${cartData.quantity}", fontSize = 12.sp, color = Color.Black)
+            Text(text = "${cartData.quantity}", style = AppTheme.typography.labelNormal, color = AppTheme.colorScheme.primary)
             Spacer(modifier = Modifier.width(25.dp))
-            Text(text = "Rs ${cartData.finalPrice}",color = Color.Black, fontSize = 12.sp)
+            Text(text = "Rs ${cartData.finalPrice}",style = AppTheme.typography.labelNormal, color = AppTheme.colorScheme.primary)
         }
     }
         }

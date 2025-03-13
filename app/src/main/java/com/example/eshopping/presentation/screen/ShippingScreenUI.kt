@@ -30,7 +30,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonColors
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
@@ -56,6 +58,7 @@ import com.example.eshopping.data.model.Cart
 import com.example.eshopping.data.model.ShippingAddress
 import com.example.eshopping.presentation.navigation.Routes
 import com.example.eshopping.presentation.viewmodel.MainViewModel
+import com.example.eshopping.ui.theme.AppTheme
 import com.example.eshopping.utils.getColorFromName
 import com.google.firebase.auth.FirebaseAuth
 
@@ -77,8 +80,8 @@ fun ShippingScreenUI(image: String, name: String, price: String, quantity: Int,v
             {
                 Text(
                     text = "Shipping",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
+                    style = AppTheme.typography.titleLarge,
+                    color = AppTheme.colorScheme.primary
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -100,8 +103,8 @@ fun ShippingScreenUI(image: String, name: String, price: String, quantity: Int,v
                 // Shipping Method
                 Text(
                     text = "Shipping Method",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
+                    style = AppTheme.typography.labelLarge,
+                    color = AppTheme.colorScheme.primary
                 )
                 ShippingMethod()
                 Spacer(modifier = Modifier.height(16.dp))
@@ -113,9 +116,9 @@ fun ShippingScreenUI(image: String, name: String, price: String, quantity: Int,v
                         amount = vm.totalAmount.value
                     ) },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(232, 144, 142))
+                    colors = ButtonDefaults.buttonColors(containerColor = AppTheme.colorScheme.primary, contentColor = AppTheme.colorScheme.onPrimary)
                 ) {
-                    Text(text = "Continue to Shipping")
+                    Text(text = "Continue to Shipping", style = AppTheme.typography.labelNormal)
                 }
             }
 }
@@ -141,41 +144,16 @@ fun ProductDetails(
 }
 
 @Composable
-fun SummaryRow(label: String, amount: String, isBold: Boolean = false) {
+fun SummaryRow(label: String, amount: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = label, fontSize = 14.sp, fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal)
-        Text(text = amount, fontSize = 14.sp, fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal)
+        Text(text = label, style = AppTheme.typography.labelNormal, color = AppTheme.colorScheme.primary)
+        Text(text = amount, style = AppTheme.typography.labelRow, color = AppTheme.colorScheme.primary)
     }
 }
 
-@Composable
-fun ContactInformation() {
-    Column {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(
-                text = "Contact Information",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Already have an account? Login",
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = "",
-            onValueChange = { /* Handle email input */ },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -203,13 +181,13 @@ fun ShipAddress(vm: MainViewModel,context: Context,auth: FirebaseAuth) {
     if (!shipAddressState.success.isNullOrEmpty()) {
         LaunchedEffect(shipAddressState.success) {
             shipAddressState.success?.firstOrNull()?.let { addressData ->
-                firstName = addressData.firstName ?: ""
-                lastName = addressData.lastName ?: ""
-                address = addressData.address ?: ""
-                city = addressData.city ?: ""
-                postalCode = addressData.postalCode ?: ""
-                country = addressData.country ?: ""
-                contactNumber = addressData.contactNumber ?: ""
+                firstName = addressData.firstName
+                lastName = addressData.lastName
+                address = addressData.address
+                city = addressData.city
+                postalCode = addressData.postalCode
+                country = addressData.country
+                contactNumber = addressData.contactNumber
             }
         }
     }
@@ -234,131 +212,446 @@ fun ShipAddress(vm: MainViewModel,context: Context,auth: FirebaseAuth) {
     Column {
         Text(
             text = "Shipping Address",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold
+            style = AppTheme.typography.labelLarge,
+            color = AppTheme.colorScheme.primary
         )
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = country,
+            textStyle = AppTheme.typography.labelLarge,
             readOnly = if (!shipAddressState.success.isNullOrEmpty()) changeShip else !changeShip,
             onValueChange = {
                 country = it },
-            label = { Text("Country / Region") },
+            label = { Text("Country / Region", style = AppTheme.typography.labelNormal) },
             modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                focusedBorderColor = Color(232, 144, 142),      // Border color when focused
-                unfocusedBorderColor = Color(232, 144, 142),    // Border color when not focused
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = OutlinedTextFieldTokens.FocusInputColor.value,
+                unfocusedTextColor = OutlinedTextFieldTokens.InputColor.value,
+                disabledTextColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                    .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                errorTextColor = OutlinedTextFieldTokens.ErrorInputColor.value,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent,
+                errorContainerColor = Color.Transparent,
+                cursorColor = Color.Gray,             // Cursor color
+                errorCursorColor = OutlinedTextFieldTokens.ErrorFocusCaretColor.value,
+                selectionColors = LocalTextSelectionColors.current,
+                focusedBorderColor = AppTheme.colorScheme.primary,      // Border color when focused
+                unfocusedBorderColor = AppTheme.colorScheme.primary,    // Border color when not focused
                 disabledBorderColor = Color.LightGray,// Border color when disabled
                 errorBorderColor = Color.Red,         // Border color in error state
-                focusedLabelColor = Color.Gray,       // Label color when focused
+                focusedLeadingIconColor = OutlinedTextFieldTokens.FocusLeadingIconColor.value,
+                unfocusedLeadingIconColor = OutlinedTextFieldTokens.LeadingIconColor.value,
+                disabledLeadingIconColor = OutlinedTextFieldTokens.DisabledLeadingIconColor.value
+                    .copy(alpha = OutlinedTextFieldTokens.DisabledLeadingIconOpacity),
+                errorLeadingIconColor = OutlinedTextFieldTokens.ErrorLeadingIconColor.value,
+                focusedTrailingIconColor = OutlinedTextFieldTokens.FocusTrailingIconColor.value,
+                unfocusedTrailingIconColor = OutlinedTextFieldTokens.TrailingIconColor.value,
+                disabledTrailingIconColor = OutlinedTextFieldTokens.DisabledTrailingIconColor
+                    .value.copy(alpha = OutlinedTextFieldTokens.DisabledTrailingIconOpacity),
+                errorTrailingIconColor = OutlinedTextFieldTokens.ErrorTrailingIconColor.value,
+                focusedLabelColor = AppTheme.colorScheme.primary,       // Label color when focused
                 unfocusedLabelColor = Color.Black,     // Label color when not focused
-                cursorColor = Color.Gray,             // Cursor color
+                disabledLabelColor = OutlinedTextFieldTokens.DisabledLabelColor.value
+                    .copy(alpha = OutlinedTextFieldTokens.DisabledLabelOpacity),
+                errorLabelColor = OutlinedTextFieldTokens.ErrorLabelColor.value,
+                focusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                unfocusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                disabledPlaceholderColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                    .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                errorPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                focusedSupportingTextColor = OutlinedTextFieldTokens.FocusSupportingColor.value,
+                unfocusedSupportingTextColor = OutlinedTextFieldTokens.SupportingColor.value,
+                disabledSupportingTextColor = OutlinedTextFieldTokens.DisabledSupportingColor
+                    .value.copy(alpha = OutlinedTextFieldTokens.DisabledSupportingOpacity),
+                errorSupportingTextColor = OutlinedTextFieldTokens.ErrorSupportingColor.value,
+                focusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                unfocusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                disabledPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value
+                    .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                errorPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                focusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+                unfocusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+                disabledSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value
+                    .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                errorSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
             )
         )
         Spacer(modifier = Modifier.height(8.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             OutlinedTextField(
                 value = firstName,
+                textStyle = AppTheme.typography.labelLarge,
                 readOnly = if (!shipAddressState.success.isNullOrEmpty()) changeShip else !changeShip,
                 onValueChange = { firstName = it },
-                label = { Text("First Name") },
+                label = { Text("First Name",style = AppTheme.typography.labelNormal) },
                 modifier = Modifier.weight(1f),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = Color(232, 144, 142),      // Border color when focused
-                    unfocusedBorderColor = Color(232, 144, 142),    // Border color when not focused
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = OutlinedTextFieldTokens.FocusInputColor.value,
+                    unfocusedTextColor = OutlinedTextFieldTokens.InputColor.value,
+                    disabledTextColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorTextColor = OutlinedTextFieldTokens.ErrorInputColor.value,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    errorContainerColor = Color.Transparent,
+                    cursorColor = Color.Gray,             // Cursor color
+                    errorCursorColor = OutlinedTextFieldTokens.ErrorFocusCaretColor.value,
+                    selectionColors = LocalTextSelectionColors.current,
+                    focusedBorderColor = AppTheme.colorScheme.primary,      // Border color when focused
+                    unfocusedBorderColor = AppTheme.colorScheme.primary,    // Border color when not focused
                     disabledBorderColor = Color.LightGray,// Border color when disabled
                     errorBorderColor = Color.Red,         // Border color in error state
-                    focusedLabelColor = Color.Gray,       // Label color when focused
+                    focusedLeadingIconColor = OutlinedTextFieldTokens.FocusLeadingIconColor.value,
+                    unfocusedLeadingIconColor = OutlinedTextFieldTokens.LeadingIconColor.value,
+                    disabledLeadingIconColor = OutlinedTextFieldTokens.DisabledLeadingIconColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledLeadingIconOpacity),
+                    errorLeadingIconColor = OutlinedTextFieldTokens.ErrorLeadingIconColor.value,
+                    focusedTrailingIconColor = OutlinedTextFieldTokens.FocusTrailingIconColor.value,
+                    unfocusedTrailingIconColor = OutlinedTextFieldTokens.TrailingIconColor.value,
+                    disabledTrailingIconColor = OutlinedTextFieldTokens.DisabledTrailingIconColor
+                        .value.copy(alpha = OutlinedTextFieldTokens.DisabledTrailingIconOpacity),
+                    errorTrailingIconColor = OutlinedTextFieldTokens.ErrorTrailingIconColor.value,
+                    focusedLabelColor = AppTheme.colorScheme.primary,       // Label color when focused
                     unfocusedLabelColor = Color.Black,     // Label color when not focused
-                    cursorColor = Color.Gray,             // Cursor color
+                    disabledLabelColor = OutlinedTextFieldTokens.DisabledLabelColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledLabelOpacity),
+                    errorLabelColor = OutlinedTextFieldTokens.ErrorLabelColor.value,
+                    focusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                    unfocusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                    disabledPlaceholderColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                    focusedSupportingTextColor = OutlinedTextFieldTokens.FocusSupportingColor.value,
+                    unfocusedSupportingTextColor = OutlinedTextFieldTokens.SupportingColor.value,
+                    disabledSupportingTextColor = OutlinedTextFieldTokens.DisabledSupportingColor
+                        .value.copy(alpha = OutlinedTextFieldTokens.DisabledSupportingOpacity),
+                    errorSupportingTextColor = OutlinedTextFieldTokens.ErrorSupportingColor.value,
+                    focusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                    unfocusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                    disabledPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                    focusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+                    unfocusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+                    disabledSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
                 )
             )
             Spacer(modifier = Modifier.width(8.dp))
             OutlinedTextField(
                 value = lastName,
+                textStyle = AppTheme.typography.labelLarge,
                 readOnly = if (!shipAddressState.success.isNullOrEmpty()) changeShip else !changeShip,
                 onValueChange = { lastName = it},
-                label = { Text("Last Name") },
+                label = { Text("Last Name",style = AppTheme.typography.labelNormal) },
                 modifier = Modifier.weight(1f),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = Color(232, 144, 142),      // Border color when focused
-                    unfocusedBorderColor = Color(232, 144, 142),    // Border color when not focused
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = OutlinedTextFieldTokens.FocusInputColor.value,
+                    unfocusedTextColor = OutlinedTextFieldTokens.InputColor.value,
+                    disabledTextColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorTextColor = OutlinedTextFieldTokens.ErrorInputColor.value,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    errorContainerColor = Color.Transparent,
+                    cursorColor = Color.Gray,             // Cursor color
+                    errorCursorColor = OutlinedTextFieldTokens.ErrorFocusCaretColor.value,
+                    selectionColors = LocalTextSelectionColors.current,
+                    focusedBorderColor = AppTheme.colorScheme.primary,      // Border color when focused
+                    unfocusedBorderColor = AppTheme.colorScheme.primary,    // Border color when not focused
                     disabledBorderColor = Color.LightGray,// Border color when disabled
                     errorBorderColor = Color.Red,         // Border color in error state
-                    focusedLabelColor = Color.Gray,       // Label color when focused
+                    focusedLeadingIconColor = OutlinedTextFieldTokens.FocusLeadingIconColor.value,
+                    unfocusedLeadingIconColor = OutlinedTextFieldTokens.LeadingIconColor.value,
+                    disabledLeadingIconColor = OutlinedTextFieldTokens.DisabledLeadingIconColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledLeadingIconOpacity),
+                    errorLeadingIconColor = OutlinedTextFieldTokens.ErrorLeadingIconColor.value,
+                    focusedTrailingIconColor = OutlinedTextFieldTokens.FocusTrailingIconColor.value,
+                    unfocusedTrailingIconColor = OutlinedTextFieldTokens.TrailingIconColor.value,
+                    disabledTrailingIconColor = OutlinedTextFieldTokens.DisabledTrailingIconColor
+                        .value.copy(alpha = OutlinedTextFieldTokens.DisabledTrailingIconOpacity),
+                    errorTrailingIconColor = OutlinedTextFieldTokens.ErrorTrailingIconColor.value,
+                    focusedLabelColor = AppTheme.colorScheme.primary,       // Label color when focused
                     unfocusedLabelColor = Color.Black,     // Label color when not focused
-                    cursorColor = Color.Gray,             // Cursor color
+                    disabledLabelColor = OutlinedTextFieldTokens.DisabledLabelColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledLabelOpacity),
+                    errorLabelColor = OutlinedTextFieldTokens.ErrorLabelColor.value,
+                    focusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                    unfocusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                    disabledPlaceholderColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                    focusedSupportingTextColor = OutlinedTextFieldTokens.FocusSupportingColor.value,
+                    unfocusedSupportingTextColor = OutlinedTextFieldTokens.SupportingColor.value,
+                    disabledSupportingTextColor = OutlinedTextFieldTokens.DisabledSupportingColor
+                        .value.copy(alpha = OutlinedTextFieldTokens.DisabledSupportingOpacity),
+                    errorSupportingTextColor = OutlinedTextFieldTokens.ErrorSupportingColor.value,
+                    focusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                    unfocusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                    disabledPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                    focusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+                    unfocusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+                    disabledSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
                 )
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = address,
+            textStyle = AppTheme.typography.labelLarge,
             readOnly = if (!shipAddressState.success.isNullOrEmpty()) changeShip else !changeShip,
             onValueChange = { address = it },
-            label = { Text("Address") },
+            label = { Text("Address",style = AppTheme.typography.labelNormal) },
             modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                focusedBorderColor = Color(232, 144, 142),      // Border color when focused
-                unfocusedBorderColor = Color(232, 144, 142),    // Border color when not focused
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = OutlinedTextFieldTokens.FocusInputColor.value,
+                unfocusedTextColor = OutlinedTextFieldTokens.InputColor.value,
+                disabledTextColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                    .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                errorTextColor = OutlinedTextFieldTokens.ErrorInputColor.value,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent,
+                errorContainerColor = Color.Transparent,
+                cursorColor = Color.Gray,             // Cursor color
+                errorCursorColor = OutlinedTextFieldTokens.ErrorFocusCaretColor.value,
+                selectionColors = LocalTextSelectionColors.current,
+                focusedBorderColor = AppTheme.colorScheme.primary,      // Border color when focused
+                unfocusedBorderColor = AppTheme.colorScheme.primary,    // Border color when not focused
                 disabledBorderColor = Color.LightGray,// Border color when disabled
                 errorBorderColor = Color.Red,         // Border color in error state
-                focusedLabelColor = Color.Gray,       // Label color when focused
+                focusedLeadingIconColor = OutlinedTextFieldTokens.FocusLeadingIconColor.value,
+                unfocusedLeadingIconColor = OutlinedTextFieldTokens.LeadingIconColor.value,
+                disabledLeadingIconColor = OutlinedTextFieldTokens.DisabledLeadingIconColor.value
+                    .copy(alpha = OutlinedTextFieldTokens.DisabledLeadingIconOpacity),
+                errorLeadingIconColor = OutlinedTextFieldTokens.ErrorLeadingIconColor.value,
+                focusedTrailingIconColor = OutlinedTextFieldTokens.FocusTrailingIconColor.value,
+                unfocusedTrailingIconColor = OutlinedTextFieldTokens.TrailingIconColor.value,
+                disabledTrailingIconColor = OutlinedTextFieldTokens.DisabledTrailingIconColor
+                    .value.copy(alpha = OutlinedTextFieldTokens.DisabledTrailingIconOpacity),
+                errorTrailingIconColor = OutlinedTextFieldTokens.ErrorTrailingIconColor.value,
+                focusedLabelColor = AppTheme.colorScheme.primary,       // Label color when focused
                 unfocusedLabelColor = Color.Black,     // Label color when not focused
-                cursorColor = Color.Gray,             // Cursor color
+                disabledLabelColor = OutlinedTextFieldTokens.DisabledLabelColor.value
+                    .copy(alpha = OutlinedTextFieldTokens.DisabledLabelOpacity),
+                errorLabelColor = OutlinedTextFieldTokens.ErrorLabelColor.value,
+                focusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                unfocusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                disabledPlaceholderColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                    .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                errorPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                focusedSupportingTextColor = OutlinedTextFieldTokens.FocusSupportingColor.value,
+                unfocusedSupportingTextColor = OutlinedTextFieldTokens.SupportingColor.value,
+                disabledSupportingTextColor = OutlinedTextFieldTokens.DisabledSupportingColor
+                    .value.copy(alpha = OutlinedTextFieldTokens.DisabledSupportingOpacity),
+                errorSupportingTextColor = OutlinedTextFieldTokens.ErrorSupportingColor.value,
+                focusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                unfocusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                disabledPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value
+                    .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                errorPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                focusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+                unfocusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+                disabledSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value
+                    .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                errorSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
             )
         )
         Spacer(modifier = Modifier.height(8.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             OutlinedTextField(
                 value = city,
+                textStyle = AppTheme.typography.labelLarge,
                 readOnly = if (!shipAddressState.success.isNullOrEmpty()) changeShip else !changeShip,
                 onValueChange = { city = it },
-                label = { Text("City") },
+                label = { Text("City",style = AppTheme.typography.labelNormal) },
                 modifier = Modifier.weight(1f),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = Color(232, 144, 142),      // Border color when focused
-                    unfocusedBorderColor = Color(232, 144, 142),    // Border color when not focused
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = OutlinedTextFieldTokens.FocusInputColor.value,
+                    unfocusedTextColor = OutlinedTextFieldTokens.InputColor.value,
+                    disabledTextColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorTextColor = OutlinedTextFieldTokens.ErrorInputColor.value,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    errorContainerColor = Color.Transparent,
+                    cursorColor = Color.Gray,             // Cursor color
+                    errorCursorColor = OutlinedTextFieldTokens.ErrorFocusCaretColor.value,
+                    selectionColors = LocalTextSelectionColors.current,
+                    focusedBorderColor = AppTheme.colorScheme.primary,      // Border color when focused
+                    unfocusedBorderColor = AppTheme.colorScheme.primary,    // Border color when not focused
                     disabledBorderColor = Color.LightGray,// Border color when disabled
                     errorBorderColor = Color.Red,         // Border color in error state
-                    focusedLabelColor = Color.Gray,       // Label color when focused
+                    focusedLeadingIconColor = OutlinedTextFieldTokens.FocusLeadingIconColor.value,
+                    unfocusedLeadingIconColor = OutlinedTextFieldTokens.LeadingIconColor.value,
+                    disabledLeadingIconColor = OutlinedTextFieldTokens.DisabledLeadingIconColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledLeadingIconOpacity),
+                    errorLeadingIconColor = OutlinedTextFieldTokens.ErrorLeadingIconColor.value,
+                    focusedTrailingIconColor = OutlinedTextFieldTokens.FocusTrailingIconColor.value,
+                    unfocusedTrailingIconColor = OutlinedTextFieldTokens.TrailingIconColor.value,
+                    disabledTrailingIconColor = OutlinedTextFieldTokens.DisabledTrailingIconColor
+                        .value.copy(alpha = OutlinedTextFieldTokens.DisabledTrailingIconOpacity),
+                    errorTrailingIconColor = OutlinedTextFieldTokens.ErrorTrailingIconColor.value,
+                    focusedLabelColor = AppTheme.colorScheme.primary,       // Label color when focused
                     unfocusedLabelColor = Color.Black,     // Label color when not focused
-                    cursorColor = Color.Gray,             // Cursor color
+                    disabledLabelColor = OutlinedTextFieldTokens.DisabledLabelColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledLabelOpacity),
+                    errorLabelColor = OutlinedTextFieldTokens.ErrorLabelColor.value,
+                    focusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                    unfocusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                    disabledPlaceholderColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                    focusedSupportingTextColor = OutlinedTextFieldTokens.FocusSupportingColor.value,
+                    unfocusedSupportingTextColor = OutlinedTextFieldTokens.SupportingColor.value,
+                    disabledSupportingTextColor = OutlinedTextFieldTokens.DisabledSupportingColor
+                        .value.copy(alpha = OutlinedTextFieldTokens.DisabledSupportingOpacity),
+                    errorSupportingTextColor = OutlinedTextFieldTokens.ErrorSupportingColor.value,
+                    focusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                    unfocusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                    disabledPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                    focusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+                    unfocusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+                    disabledSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
                 )
             )
             Spacer(modifier = Modifier.width(8.dp))
             OutlinedTextField(
                 value = postalCode,
+                textStyle = AppTheme.typography.labelLarge,
                 readOnly = if (!shipAddressState.success.isNullOrEmpty()) changeShip else !changeShip,
                 onValueChange = { postalCode = it},
-                label = { Text("Postal code") },
+                label = { Text("Postal code",style = AppTheme.typography.labelNormal) },
                 modifier = Modifier.weight(1f),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = Color(232, 144, 142),      // Border color when focused
-                    unfocusedBorderColor = Color(232, 144, 142),    // Border color when not focused
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = OutlinedTextFieldTokens.FocusInputColor.value,
+                    unfocusedTextColor = OutlinedTextFieldTokens.InputColor.value,
+                    disabledTextColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorTextColor = OutlinedTextFieldTokens.ErrorInputColor.value,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    errorContainerColor = Color.Transparent,
+                    cursorColor = Color.Gray,             // Cursor color
+                    errorCursorColor = OutlinedTextFieldTokens.ErrorFocusCaretColor.value,
+                    selectionColors = LocalTextSelectionColors.current,
+                    focusedBorderColor = AppTheme.colorScheme.primary,      // Border color when focused
+                    unfocusedBorderColor = AppTheme.colorScheme.primary,    // Border color when not focused
                     disabledBorderColor = Color.LightGray,// Border color when disabled
                     errorBorderColor = Color.Red,         // Border color in error state
-                    focusedLabelColor = Color.Gray,       // Label color when focused
+                    focusedLeadingIconColor = OutlinedTextFieldTokens.FocusLeadingIconColor.value,
+                    unfocusedLeadingIconColor = OutlinedTextFieldTokens.LeadingIconColor.value,
+                    disabledLeadingIconColor = OutlinedTextFieldTokens.DisabledLeadingIconColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledLeadingIconOpacity),
+                    errorLeadingIconColor = OutlinedTextFieldTokens.ErrorLeadingIconColor.value,
+                    focusedTrailingIconColor = OutlinedTextFieldTokens.FocusTrailingIconColor.value,
+                    unfocusedTrailingIconColor = OutlinedTextFieldTokens.TrailingIconColor.value,
+                    disabledTrailingIconColor = OutlinedTextFieldTokens.DisabledTrailingIconColor
+                        .value.copy(alpha = OutlinedTextFieldTokens.DisabledTrailingIconOpacity),
+                    errorTrailingIconColor = OutlinedTextFieldTokens.ErrorTrailingIconColor.value,
+                    focusedLabelColor = AppTheme.colorScheme.primary,       // Label color when focused
                     unfocusedLabelColor = Color.Black,     // Label color when not focused
-                    cursorColor = Color.Gray,             // Cursor color
+                    disabledLabelColor = OutlinedTextFieldTokens.DisabledLabelColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledLabelOpacity),
+                    errorLabelColor = OutlinedTextFieldTokens.ErrorLabelColor.value,
+                    focusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                    unfocusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                    disabledPlaceholderColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                    focusedSupportingTextColor = OutlinedTextFieldTokens.FocusSupportingColor.value,
+                    unfocusedSupportingTextColor = OutlinedTextFieldTokens.SupportingColor.value,
+                    disabledSupportingTextColor = OutlinedTextFieldTokens.DisabledSupportingColor
+                        .value.copy(alpha = OutlinedTextFieldTokens.DisabledSupportingOpacity),
+                    errorSupportingTextColor = OutlinedTextFieldTokens.ErrorSupportingColor.value,
+                    focusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                    unfocusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                    disabledPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                    focusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+                    unfocusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+                    disabledSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value
+                        .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                    errorSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
                 )
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = contactNumber,
+            textStyle = AppTheme.typography.labelLarge,
             readOnly = if (!shipAddressState.success.isNullOrEmpty()) changeContact else !changeContact,
             onValueChange = { contactNumber = it },
-            label = { Text("Contact number") },
+            label = { Text("Contact number",style = AppTheme.typography.labelNormal) },
             modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                focusedBorderColor = Color(232, 144, 142),      // Border color when focused
-                unfocusedBorderColor = Color(232, 144, 142),    // Border color when not focused
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = OutlinedTextFieldTokens.FocusInputColor.value,
+                unfocusedTextColor = OutlinedTextFieldTokens.InputColor.value,
+                disabledTextColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                    .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                errorTextColor = OutlinedTextFieldTokens.ErrorInputColor.value,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent,
+                errorContainerColor = Color.Transparent,
+                cursorColor = Color.Gray,             // Cursor color
+                errorCursorColor = OutlinedTextFieldTokens.ErrorFocusCaretColor.value,
+                selectionColors = LocalTextSelectionColors.current,
+                focusedBorderColor = AppTheme.colorScheme.primary,      // Border color when focused
+                unfocusedBorderColor = AppTheme.colorScheme.primary,    // Border color when not focused
                 disabledBorderColor = Color.LightGray,// Border color when disabled
                 errorBorderColor = Color.Red,         // Border color in error state
-                focusedLabelColor = Color.Gray,       // Label color when focused
+                focusedLeadingIconColor = OutlinedTextFieldTokens.FocusLeadingIconColor.value,
+                unfocusedLeadingIconColor = OutlinedTextFieldTokens.LeadingIconColor.value,
+                disabledLeadingIconColor = OutlinedTextFieldTokens.DisabledLeadingIconColor.value
+                    .copy(alpha = OutlinedTextFieldTokens.DisabledLeadingIconOpacity),
+                errorLeadingIconColor = OutlinedTextFieldTokens.ErrorLeadingIconColor.value,
+                focusedTrailingIconColor = OutlinedTextFieldTokens.FocusTrailingIconColor.value,
+                unfocusedTrailingIconColor = OutlinedTextFieldTokens.TrailingIconColor.value,
+                disabledTrailingIconColor = OutlinedTextFieldTokens.DisabledTrailingIconColor
+                    .value.copy(alpha = OutlinedTextFieldTokens.DisabledTrailingIconOpacity),
+                errorTrailingIconColor = OutlinedTextFieldTokens.ErrorTrailingIconColor.value,
+                focusedLabelColor = AppTheme.colorScheme.primary,       // Label color when focused
                 unfocusedLabelColor = Color.Black,     // Label color when not focused
-                cursorColor = Color.Gray,             // Cursor color
+                disabledLabelColor = OutlinedTextFieldTokens.DisabledLabelColor.value
+                    .copy(alpha = OutlinedTextFieldTokens.DisabledLabelOpacity),
+                errorLabelColor = OutlinedTextFieldTokens.ErrorLabelColor.value,
+                focusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                unfocusedPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                disabledPlaceholderColor = OutlinedTextFieldTokens.DisabledInputColor.value
+                    .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                errorPlaceholderColor = OutlinedTextFieldTokens.InputPlaceholderColor.value,
+                focusedSupportingTextColor = OutlinedTextFieldTokens.FocusSupportingColor.value,
+                unfocusedSupportingTextColor = OutlinedTextFieldTokens.SupportingColor.value,
+                disabledSupportingTextColor = OutlinedTextFieldTokens.DisabledSupportingColor
+                    .value.copy(alpha = OutlinedTextFieldTokens.DisabledSupportingOpacity),
+                errorSupportingTextColor = OutlinedTextFieldTokens.ErrorSupportingColor.value,
+                focusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                unfocusedPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                disabledPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value
+                    .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                errorPrefixColor = OutlinedTextFieldTokens.InputPrefixColor.value,
+                focusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+                unfocusedSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
+                disabledSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value
+                    .copy(alpha = OutlinedTextFieldTokens.DisabledInputOpacity),
+                errorSuffixColor = OutlinedTextFieldTokens.InputSuffixColor.value,
             )
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -382,7 +675,8 @@ fun ShipAddress(vm: MainViewModel,context: Context,auth: FirebaseAuth) {
                 })
             Text(
                 text = "Save this information for next time",
-                fontSize = 14.sp,
+                style = AppTheme.typography.labelNormal,
+                color = AppTheme.colorScheme.primary,
                 modifier = Modifier.padding(start = 8.dp)
             )
         }
@@ -390,17 +684,16 @@ fun ShipAddress(vm: MainViewModel,context: Context,auth: FirebaseAuth) {
         Column (
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp)
                 .border(
                     width = 1.dp,
-                    color = Color(232, 144, 142),
-                    shape = RoundedCornerShape(10.dp)
+                    color = AppTheme.colorScheme.primary,
+                    shape = AppTheme.shape.container
                 )
         ) {
             Row(modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 6.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Contact")
+                Text(text = "Contact", style = AppTheme.typography.labelNormal, color = AppTheme.colorScheme.primary)
                 TextButton(onClick = {
                     changeContact = !changeContact
                     val updatedFields = mutableMapOf<String, Any?>()
@@ -413,13 +706,13 @@ fun ShipAddress(vm: MainViewModel,context: Context,auth: FirebaseAuth) {
                 },
                     enabled = !shipAddressState.success.isNullOrEmpty()
                 ) {
-                    Text(text = if(changeContact) "Change" else "Save")
+                    Text(text = if(changeContact) "Change" else "Save",style = AppTheme.typography.labelSmall, color = AppTheme.colorScheme.primary)
                 }
             }
             Row(modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 6.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Ship to")
+                Text(text = "Ship to",style = AppTheme.typography.labelNormal, color = AppTheme.colorScheme.primary)
                 TextButton(onClick = {
                     changeShip = !changeShip
                     val updatedFields = mutableMapOf<String, Any?>()
@@ -436,7 +729,7 @@ fun ShipAddress(vm: MainViewModel,context: Context,auth: FirebaseAuth) {
                 },
                     enabled = !shipAddressState.success.isNullOrEmpty()
                 ) {
-                    Text(text = if(changeShip) "Change" else "Save")
+                    Text(text = if(changeShip) "Change" else "Save",style = AppTheme.typography.labelSmall, color = AppTheme.colorScheme.primary)
                 }
             }
         }
@@ -446,7 +739,7 @@ fun ShipAddress(vm: MainViewModel,context: Context,auth: FirebaseAuth) {
 @Composable
 fun ShippingMethod() {
     Spacer(modifier = Modifier.height(16.dp))
-    Column(modifier = Modifier.border(width = 1.dp, color = Color(232, 144, 142), shape = RoundedCornerShape(10.dp))) {
+    Column(modifier = Modifier.border(width = 1.dp, color = AppTheme.colorScheme.primary, shape = AppTheme.shape.container)) {
         var isSelected = remember { mutableStateOf(true) }
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -454,11 +747,13 @@ fun ShippingMethod() {
         ) {
             RadioButton(
                 selected = isSelected.value,
-                onClick = { isSelected.value=true }
+                onClick = { isSelected.value=true },
+                colors = RadioButtonColors(selectedColor = AppTheme.colorScheme.primary, unselectedColor = AppTheme.colorScheme.primary, disabledSelectedColor = AppTheme.colorScheme.primary, disabledUnselectedColor = AppTheme.colorScheme.primary)
             )
             Text(
                 text = "Standard FREE delivery over Rs:4500(Free)",
-                fontSize = 12.sp
+                style = AppTheme.typography.labelNormal,
+                color = AppTheme.colorScheme.primary
             )
         }
         Row(
@@ -471,7 +766,8 @@ fun ShippingMethod() {
             )
             Text(
                 text = "Cash on delivery over Rs:4500 (Free Delivery, COD processing fee 100 only)",
-                fontSize = 12.sp
+                style = AppTheme.typography.labelNormal,
+                color = AppTheme.colorScheme.primary
             )
         }
     }
@@ -483,8 +779,8 @@ fun RoundCheckbox(checked: Boolean, onCheckedChange: () -> Unit) {
     Box(
         modifier = Modifier
             .size(20.dp) // Control overall size
-            .clip(RoundedCornerShape(10.dp))
-            .background(if (checked) Color(232, 144, 142) else Color(250, 234, 233))
+            .clip(AppTheme.shape.container)
+            .background(if (checked) AppTheme.colorScheme.primary else Color(250, 234, 233))
             .clickable { checked },
         contentAlignment = Alignment.Center
     ) {
@@ -530,15 +826,15 @@ fun SelectProduct(name: String, image: String, vm: MainViewModel) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = name,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
+                    style = AppTheme.typography.labelLarge,
+                    color = AppTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = selectedSize,
-                        fontSize = 15.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        style = AppTheme.typography.paragraph,
+                        color = AppTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Box(
@@ -550,7 +846,7 @@ fun SelectProduct(name: String, image: String, vm: MainViewModel) {
                             )
                             .border(
                                 width = 1.dp,
-                                color = Color.Black,
+                                color = AppTheme.colorScheme.primary,
                                 CircleShape
                             )
                     )
@@ -566,7 +862,7 @@ fun SelectProduct(name: String, image: String, vm: MainViewModel) {
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
 
-        SummaryRow(label = "Total", amount = "Rs: $totalPrice", isBold = true)
+        SummaryRow(label = "Total", amount = "Rs: $totalPrice")
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color.Black)
     }
 }
@@ -590,7 +886,7 @@ fun SelectListOfProduct(vm: MainViewModel) {
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
 
-        SummaryRow(label = "Total", amount = "Rs: ${vm.totalAmount.value}", isBold = true)
+        SummaryRow(label = "Total", amount = "Rs: ${vm.totalAmount.value}")
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color.Black)
     }
 

@@ -1,6 +1,5 @@
 package com.example.eshopping
 
-import android.app.Activity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -10,29 +9,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.eshopping.data.SupabaseClient.supabaseClient
-import com.example.eshopping.data.model.UserData
 import com.example.eshopping.presentation.navigation.NavApp
-import com.example.eshopping.presentation.screen.HomeScreenUI
-import com.example.eshopping.presentation.screen.SignInScreenUI
-import com.example.eshopping.presentation.screen.SignUpScreenUI
-import com.example.eshopping.ui.theme.EShoppingTheme
+import com.example.eshopping.ui.theme.AppTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.razorpay.Checkout
 import com.razorpay.PaymentData
-import com.razorpay.PaymentResultListener
 import com.razorpay.PaymentResultWithDataListener
 import dagger.hilt.android.AndroidEntryPoint
-import io.github.jan.supabase.annotations.SupabaseExperimental
-import io.github.jan.supabase.postgrest.from
-import io.github.jan.supabase.realtime.selectAsFlow
 import org.json.JSONObject
 import javax.inject.Inject
 
@@ -44,10 +29,11 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            EShoppingTheme {
+            AppTheme {
                 Box(modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 50.dp)) {
+                    .padding(top = 50.dp)
+                ) {
                     NavApp(auth = auth)
                 }
             }
@@ -78,7 +64,6 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
              e.printStackTrace()
          }
     }
-
     override fun onPaymentSuccess(p0: String?, p1: PaymentData?) {
         Toast.makeText(this, "Payment Successful $p0", Toast.LENGTH_SHORT).show()
     }
@@ -88,4 +73,3 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
         Log.d("TAGRoz", "onPaymentError: $p1")
     }
 }
-

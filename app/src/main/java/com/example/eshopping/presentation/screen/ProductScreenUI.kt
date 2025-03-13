@@ -1,5 +1,7 @@
 package com.example.eshopping.presentation.screen
 
+//noinspection SuspiciousImport
+import android.R
 import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
@@ -23,7 +25,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Share
@@ -32,7 +33,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,16 +47,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.eshopping.data.model.Cart
 import com.example.eshopping.presentation.navigation.Routes
 import com.example.eshopping.presentation.viewmodel.GetSpecificProductState
 import com.example.eshopping.presentation.viewmodel.MainViewModel
+import com.example.eshopping.ui.theme.AppTheme
 import com.example.eshopping.utils.getColorFromName
 
 @Composable
@@ -78,7 +77,7 @@ fun ProductScreenUI(
 
         state.value.isLoading -> {
             Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = AppTheme.colorScheme.primary)
             }
         }
 
@@ -133,11 +132,16 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                IconButton(onClick = { navController.popBackStack() }) {
+                IconButton(onClick = { navController.popBackStack() }, colors = IconButtonColors(
+                    contentColor = AppTheme.colorScheme.primary,
+                    containerColor = AppTheme.colorScheme.onPrimary,
+                    disabledContainerColor = AppTheme.colorScheme.primary,
+                    disabledContentColor = AppTheme.colorScheme.primary
+                )) {
                     Icon(
-                        imageVector = Icons.Filled.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
-                        tint = Color.White
+                        tint = AppTheme.colorScheme.primary
                     )
                 }
 
@@ -168,11 +172,8 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
             ) {
                 Text(
                     text = data.name,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.White,
-                        fontSize = 19.sp,
-                        fontWeight = FontWeight.Bold
-                    ),
+                    style = AppTheme.typography.titleNormal,
+                    color = AppTheme.colorScheme.onPrimary,
                     modifier = Modifier.align(Alignment.CenterStart)
                 )
             }
@@ -185,14 +186,14 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
             Row(verticalAlignment = Alignment.CenterVertically) {
                 repeat(4) {
                     Icon(
-                        painter = painterResource(id = android.R.drawable.btn_star_big_on),
+                        painter = painterResource(id = R.drawable.btn_star_big_on),
                         contentDescription = "Star",
                         tint = Color(0xFFFFC107),
                         modifier = Modifier.size(16.dp)
                     )
                 }
                 Icon(
-                    painter = painterResource(id = android.R.drawable.btn_star_big_off),
+                    painter = painterResource(id = R.drawable.btn_star_big_off),
                     contentDescription = "Star",
                     tint = Color(0xFFFFC107),
                     modifier = Modifier.size(16.dp)
@@ -203,11 +204,8 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
 
             Text(
                 text = "Rs: ${data?.finalPrice}",
-                style = TextStyle(
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
+                style = AppTheme.typography.titleNormal,
+                color = AppTheme.colorScheme.primary
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -220,7 +218,8 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
             ) {
                 Text(
                     text = "Size",
-                    style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    style = AppTheme.typography.labelLarge,
+                    color = AppTheme.colorScheme.primary
                 )
                 Row(
                     modifier = Modifier
@@ -237,16 +236,15 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
                         Icon(
                             Icons.Filled.Remove,
                             contentDescription = "Decrease Quantity",
-                            tint = Color.Black
+                            tint = AppTheme.colorScheme.primary
                         )
                     }
 
                     // Quantity Text
                     Text(
                         text = quantity.value.toString(),
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontSize = 20.sp
-                        ),
+                        style = AppTheme.typography.titleNormal,
+                        color = AppTheme.colorScheme.primary,
                         modifier = Modifier
                             .padding(horizontal = 10.dp)
                     )
@@ -260,7 +258,7 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
                         Icon(
                             Icons.Filled.Add,
                             contentDescription = "Increase Quantity",
-                            tint = Color.Black
+                            tint = AppTheme.colorScheme.primary
                         )
                     }
                 }
@@ -282,7 +280,7 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = s, style = TextStyle(fontSize = 14.sp))
+                        Text(text = s, style = AppTheme.typography.paragraph)
                     }
                 }
             }
@@ -292,7 +290,8 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
             // Color Section
             Text(
                 text = "Color",
-                style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                style = AppTheme.typography.labelLarge,
+                color = AppTheme.colorScheme.primary
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -321,23 +320,24 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
             // Specification Section
             Text(
                 text = "Specification",
-                style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                style = AppTheme.typography.labelLarge,
+                color = AppTheme.colorScheme.primary
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "Dress\nMaterial: Linen\nMaterial Composition: 100% Linen",
-                style = TextStyle(fontSize = 14.sp, color = Color.Gray),
-                lineHeight = 20.sp
+                style = AppTheme.typography.labelNormal,
+                color = AppTheme.colorScheme.secondary
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "Please bear in mind that the photo may be slightly different from the actual item in terms of color due to lighting conditions or the display used to view.",
-                style = TextStyle(fontSize = 12.sp, color = Color.Gray),
-                lineHeight = 16.sp
+                style = AppTheme.typography.labelNormal,
+                color = AppTheme.colorScheme.secondary,
             )
         }
 
@@ -350,9 +350,10 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
                     navController.navigate(Routes.ShippingScreen(name = data!!.name, image = data.image, price = data.finalPrice, quantity = quantity.value))
                 },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(232, 144, 142))
+                shape = AppTheme.shape.button,
+                colors = ButtonDefaults.buttonColors(containerColor = AppTheme.colorScheme.primary, contentColor = AppTheme.colorScheme.onPrimary)
             ) {
-                Text(text = "Buy now", color = Color.White)
+                Text(text = "Buy Now",style = AppTheme.typography.labelNormal, color = AppTheme.colorScheme.onPrimary)
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -371,9 +372,10 @@ fun ProductDetailScreen(state: State<GetSpecificProductState>, navController: Na
                     category = data.category,
                 )) },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
+                shape = AppTheme.shape.button,
+                colors = ButtonDefaults.buttonColors(containerColor = AppTheme.colorScheme.primary, contentColor = AppTheme.colorScheme.onPrimary)
             ) {
-                Text(text = "Add to Cart", color = Color.White)
+                Text(text = "Add to Cart", style = AppTheme.typography.labelNormal, color = AppTheme.colorScheme.onPrimary)
             }
 
             Spacer(modifier = Modifier.height(8.dp))

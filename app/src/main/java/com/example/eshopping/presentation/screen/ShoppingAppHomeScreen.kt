@@ -2,7 +2,6 @@ package com.example.eshopping.presentation.screen
 
 import android.annotation.SuppressLint
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,9 +24,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Card
@@ -41,20 +38,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -63,9 +54,7 @@ import com.example.eshopping.presentation.navigation.Routes
 import com.example.eshopping.presentation.viewmodel.GetProductCategoryState
 import com.example.eshopping.presentation.viewmodel.MainViewModel
 import com.example.eshopping.presentation.viewmodel.SearchProductState
-import com.example.eshopping.ui.theme.Montserrat
-import com.example.eshopping.ui.theme.MontserratMedium
-import com.example.eshopping.ui.theme.MontserratRegular
+import com.example.eshopping.ui.theme.AppTheme
 
 
 @Composable
@@ -73,6 +62,7 @@ fun ShoppingAppHomeScreen(modifier: Modifier, categoryProductState: GetProductCa
     Column(
         modifier
             .fillMaxSize()
+            .background(AppTheme.colorScheme.onPrimary)
             .padding(horizontal = 5.dp)
     ) {
         val searchState = vm.searchProductState.collectAsStateWithLifecycle()
@@ -111,7 +101,7 @@ fun SearchBarNotification(query: MutableState<String>, searchState: State<Search
         searchState.value.isLoading -> {
             CircularProgressIndicator(modifier = Modifier
                 .fillMaxSize()
-                .wrapContentSize())
+                .wrapContentSize(),color = AppTheme.colorScheme.primary)
         }
         searchState.value.success != null -> {
             Log.d("SearchBar", searchState.value.success.toString())
@@ -125,41 +115,37 @@ fun SearchBarNotification(query: MutableState<String>, searchState: State<Search
                 vm.onSearchQueryChange(it)
             },
             leadingIcon = {Icon(imageVector = Icons.Default.Search, contentDescription = "Search Icon")},
-            colors = TextFieldDefaults.colors(focusedIndicatorColor = Color(232, 144, 142), unfocusedContainerColor = Color.White, focusedContainerColor = Color.White),
-            placeholder = { Text("Search") },
-            shape = RoundedCornerShape(15.dp),
+            colors = TextFieldDefaults.colors(focusedIndicatorColor = AppTheme.colorScheme.primary, unfocusedContainerColor = AppTheme.colorScheme.onPrimary, focusedContainerColor = AppTheme.colorScheme.onPrimary),
+            placeholder = { Text("Search", style = AppTheme.typography.labelLarge) },
+            shape = AppTheme.shape.container,
             modifier = Modifier
                 .weight(1f)
-                .height(50.dp)
-                .padding(horizontal = 5.dp)
+                .height(53.dp)
                 .border(
                     width = 1.dp,
-                    color = Color(232, 144, 142),
-                    shape = RoundedCornerShape(15.dp)
+                    color = AppTheme.colorScheme.primary,
+                    shape = AppTheme.shape.container
                 )
         )
-        Icon(imageVector = Icons.Outlined.Notifications, tint = Color.Black,contentDescription = "notification icon",modifier = Modifier.size(32.dp))
+        Icon(imageVector = Icons.Outlined.Notifications, tint = AppTheme.colorScheme.primary,contentDescription = "notification icon",modifier = Modifier.size(AppTheme.sizes.larger))
     }
     Spacer(modifier = Modifier.height(20.dp))
 }
 
 @Composable
 fun CategorySection(categoryProductState: GetProductCategoryState,vm: MainViewModel,navController: NavController) {
-    val context = LocalContext.current
+
     Column {
         Text(
             text = "Categories",
-            style = TextStyle(
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = MontserratMedium
-            )
+            color = AppTheme.colorScheme.primary,
+            style = AppTheme.typography.flashTitle
         )
         LazyRow (
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 20.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(categoryProductState.categoryData ?: emptyList()){
                 CategoryChip(it, onClick = {vm.selectCategory(it.name)
@@ -175,8 +161,7 @@ fun CategoryChip(category: Category,onClick: () -> Unit) {
     Column(modifier = Modifier.padding(horizontal =12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Box(modifier = Modifier
             .size(70.dp)
-            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-            .background(Color.White)
+            .border(width = 1.dp, color = AppTheme.colorScheme.primary, shape = CircleShape)
             .clickable {
                 onClick()
             },
@@ -185,7 +170,7 @@ fun CategoryChip(category: Category,onClick: () -> Unit) {
             AsyncImage(model = category.imageUrl, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(45.dp))
         }
         Spacer(Modifier.height(5.dp))
-        Text(category.name, style = TextStyle(fontFamily = Montserrat, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp))
+        Text(category.name, style = AppTheme.typography.labelNormal, color = AppTheme.colorScheme.primary)
     }
 }
 
@@ -195,16 +180,12 @@ fun ProductGrid(categoryProductState: GetProductCategoryState,navController: Nav
     Row(modifier = Modifier
         .fillMaxWidth()
         .padding(vertical = 20.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text("Flash Sale", style = TextStyle(
-            fontSize = 18.sp,
-            fontWeight = FontWeight.ExtraBold,
-            fontFamily = MontserratMedium
-        ))
-        Text("See more", style = TextStyle(
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Normal,
-            fontFamily = MontserratMedium,
-            color = Color(232,144,142)),
+        Text("Flash Sale", color = AppTheme.colorScheme.primary,
+            style = AppTheme.typography.flashTitle)
+
+        Text("See more",
+            style = AppTheme.typography.labelLarge,
+            color = AppTheme.colorScheme.priceColor,
             modifier = Modifier.clickable {
                 navController.navigate(Routes.CategoryWiseProductScreen)
             })
@@ -231,7 +212,7 @@ fun ProductItem(imageUrl:String,name:String,price:String,finalPrice:String,onCli
                 .width(145.dp)
                 .height(190.dp)
                 .padding(end = 8.dp)
-                .clip(RoundedCornerShape(15.dp))
+                .clip(AppTheme.shape.container)
 
         )
         Card(
@@ -239,22 +220,21 @@ fun ProductItem(imageUrl:String,name:String,price:String,finalPrice:String,onCli
                 onClick.invoke()},
             modifier = Modifier
                 .size(width = 143.dp, height = 160.dp)
-                .padding(end = 8.dp, top = 8.dp)
-                .border(1.dp, Color.Gray, RoundedCornerShape(15.dp)),
-            colors = CardDefaults.cardColors(containerColor = Color(250,249,253))
+                .padding(end = 8.dp, top = 8.dp),
+            colors = CardDefaults.cardColors(containerColor = AppTheme.colorScheme.background)
         ) {
             Column(modifier = Modifier.padding(8.dp)) {
-                Text(name, style = TextStyle(fontFamily = Montserrat), fontWeight = FontWeight.Bold)
+                Text(name, style = AppTheme.typography.labelNormal, color = AppTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(modifier = Modifier.padding(vertical = 8.dp), verticalAlignment = Alignment.Bottom) {
-                    Text("Rs: ", fontSize = 15.sp, color = Color(232,144,142))
-                    Text(finalPrice, style = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 21.sp, fontFamily = MontserratMedium, color = Color(232,144,142)))
+                    Text("Rs: ", style = AppTheme.typography.labelLarge, color = AppTheme.colorScheme.priceColor)
+                    Text(finalPrice, style = AppTheme.typography.labelLarge, color = AppTheme.colorScheme.priceColor)
                 }
                 Row(modifier = Modifier, horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                    Text("Rs: ", fontSize = 15.sp, color = Color.DarkGray)
-                    Text(price, style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 17.sp, fontFamily = MontserratMedium, color = Color.DarkGray), textDecoration = TextDecoration.LineThrough)
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text("20% off",style = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 11.sp, fontFamily = MontserratRegular, color = Color(232,144,142)))
+                    Text("Rs: ", style = AppTheme.typography.labelNormal, color = AppTheme.colorScheme.primary)
+                    Text(price, style = AppTheme.typography.labelNormal, color = AppTheme.colorScheme.primary, textDecoration = TextDecoration.LineThrough)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("20% off",style = AppTheme.typography.labelSmall, color = AppTheme.colorScheme.priceColor)
                 }
             }
         }
